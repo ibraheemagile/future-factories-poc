@@ -1,25 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Award,
-  CheckCircle2,
-  Circle,
-  Factory,
-  Lightbulb,
-  GraduationCap,
-  Users,
-} from "lucide-react";
 import { useApp } from "@/lib/context";
 import {
   demoFactory,
+  factoryDetails,
   journeyStages,
   serviceProviders,
   trainingPrograms,
-  badges,
 } from "@/lib/mock-data";
 import { matchProviders } from "@/lib/ai-engine";
-import { Card, Badge, ProgressBar, SectionTitle } from "@/components/ui";
+import { Panel, Tag, ProgressLine, SectionTitle, DataTable } from "@/components/ui";
 
 export default function FactoryPage() {
   const { t } = useApp();
@@ -28,208 +19,174 @@ export default function FactoryPage() {
     (s) => s.id === demoFactory.currentStage
   );
 
+  const providerRows = matches.map((match) => {
+    const p = serviceProviders.find((sp) => sp.id === match.providerId);
+    if (!p) return [];
+    return [
+      t(p.nameAr, p.name),
+      p.solutions.slice(0, 3).join(", "),
+      `${p.avgROI}%`,
+      `${p.paybackMonths} ${t("شهر", "mo")}`,
+      <Tag key={p.id} tone="green">{t("معتمد", "Approved")}</Tag>,
+      <button key={`btn-${p.id}`} className="text-xs font-medium text-[var(--navy)] underline">
+        {t("طلب عرض", "Request Quote")}
+      </button>,
+    ];
+  });
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <SectionTitle
-        title={t("رحلة المصنع", "Factory Journey")}
-        subtitle={t(
-          "رحلة متصلة من التقييم الذاتي إلى المنارة الصناعية",
-          "Continuous journey from self-assessment to Industrial Lighthouse"
-        )}
+        title={t("ملف المصنع", "Factory Profile")}
+        subtitle={`${factoryDetails.applicationRef} — ${t(factoryDetails.program, factoryDetails.program)}`}
       />
 
-      {/* Factory Profile */}
-      <Card className="mb-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-              <Factory className="h-7 w-7" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-slate-900">
-                {t(demoFactory.nameAr, demoFactory.name)}
-              </h3>
-              <p className="text-sm text-slate-500">
-                {demoFactory.sector} · {demoFactory.size}
-              </p>
-            </div>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-emerald-700">
-              {demoFactory.readinessScore}%
-            </p>
-            <p className="text-xs text-slate-500">
-              {t("جاهزية التحول", "Transformation Readiness")}
-            </p>
-          </div>
+      {/* Factory header */}
+      <div className="mb-6 grid gap-px bg-[var(--border)] md:grid-cols-4">
+        <div className="bg-white px-5 py-4 md:col-span-2">
+          <p className="text-xs text-[var(--muted)]">{t("اسم المنشأة", "Entity Name")}</p>
+          <p className="mt-1 font-semibold text-[var(--navy)]">
+            {t(demoFactory.nameAr, demoFactory.name)}
+          </p>
+          <p className="mt-1 text-xs text-[var(--muted)]">
+            {t("س.ت", "CR")}: {factoryDetails.crNumber} · {factoryDetails.city}
+          </p>
         </div>
-        <div className="mt-4">
-          <ProgressBar
-            value={demoFactory.readinessScore}
-            label={t("نقاط التقدم", "Progress Score")}
-          />
+        <div className="bg-white px-5 py-4">
+          <p className="text-xs text-[var(--muted)]">{t("مؤشر سيري", "SERI Index")}</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-[var(--navy)]">
+            {factoryDetails.seriLevel}
+          </p>
+          <p className="text-xs text-[var(--muted)]">{factoryDetails.monshaatSize}</p>
         </div>
-      </Card>
+        <div className="bg-white px-5 py-4">
+          <p className="text-xs text-[var(--muted)]">{t("جاهزية التحول", "Readiness")}</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-[var(--navy)]">
+            {demoFactory.readinessScore}%
+          </p>
+        </div>
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Journey Map */}
-        <div className="lg:col-span-2">
-          <Card>
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
-              <Award className="h-5 w-5 text-emerald-600" />
-              {t("خريطة الرحلة", "Journey Map")}
-            </h3>
-            <div className="space-y-3">
-              {journeyStages.map((stage, i) => {
-                const isComplete = i < currentStageIndex;
-                const isCurrent = i === currentStageIndex;
-                return (
-                  <div
-                    key={stage.id}
-                    className={`flex items-center gap-3 rounded-xl p-3 transition ${
-                      isCurrent
-                        ? "border border-emerald-300 bg-emerald-50"
-                        : isComplete
-                          ? "bg-slate-50"
-                          : "opacity-50"
-                    }`}
-                  >
-                    {isComplete ? (
-                      <CheckCircle2 className="h-6 w-6 shrink-0 text-emerald-600" />
-                    ) : isCurrent ? (
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-                        {i + 1}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          {/* Journey timeline - horizontal on desktop */}
+          <Panel title={t("مسار الطلب", "Application Track")}>
+            <div className="overflow-x-auto pb-2">
+              <div className="flex min-w-max gap-0">
+                {journeyStages.map((stage, i) => {
+                  const done = i < currentStageIndex;
+                  const current = i === currentStageIndex;
+                  return (
+                    <div key={stage.id} className="flex items-start">
+                      <div className="flex w-28 flex-col items-center px-1">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center text-xs font-bold ${
+                            done
+                              ? "bg-[var(--navy)] text-white"
+                              : current
+                                ? "border-2 border-[var(--navy)] text-[var(--navy)]"
+                                : "border border-[var(--border)] text-[var(--muted)]"
+                          }`}
+                        >
+                          {done ? "✓" : i + 1}
+                        </div>
+                        <p
+                          className={`mt-2 text-center text-[10px] leading-tight ${
+                            current ? "font-semibold text-[var(--navy)]" : "text-[var(--muted)]"
+                          }`}
+                        >
+                          {t(stage.titleAr, stage.titleEn)}
+                        </p>
                       </div>
-                    ) : (
-                      <Circle className="h-6 w-6 shrink-0 text-slate-300" />
-                    )}
-                    <div>
-                      <p className="font-medium text-slate-800">
-                        {t(stage.titleAr, stage.titleEn)}
-                      </p>
-                      {isCurrent && (
-                        <Badge variant="success">
-                          {t("المرحلة الحالية", "Current Stage")}
-                        </Badge>
+                      {i < journeyStages.length - 1 && (
+                        <div
+                          className={`mt-4 h-px w-4 shrink-0 ${done ? "bg-[var(--navy)]" : "bg-[var(--border)]"}`}
+                        />
                       )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </Card>
+            <div className="mt-4 border-t border-[var(--border)] pt-4">
+              <ProgressLine
+                value={demoFactory.readinessScore}
+                label={t("نسبة إنجاز المسار", "Track Completion")}
+              />
+            </div>
+          </Panel>
 
-          {/* Provider Matching */}
-          <Card className="mt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
-              <Users className="h-5 w-5 text-emerald-600" />
-              {t("مطابقة مقدمي الخدمات (AI)", "AI Service Provider Matching")}
-            </h3>
-            <div className="space-y-4">
-              {matches.map((match) => {
-                const provider = serviceProviders.find(
-                  (p) => p.id === match.providerId
-                );
-                if (!provider) return null;
-                return (
-                  <div
-                    key={match.providerId}
-                    className="rounded-xl border border-slate-200 p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-slate-900">
-                        {t(provider.nameAr, provider.name)}
-                      </h4>
-                      <Badge variant="success">{match.score}% match</Badge>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {provider.solutions.map((s) => (
-                        <Badge key={s}>{s}</Badge>
-                      ))}
-                    </div>
-                    <ul className="mt-2 space-y-0.5 text-xs text-slate-500">
-                      {match.reasons.map((r, i) => (
-                        <li key={i}>• {r}</li>
-                      ))}
-                    </ul>
-                    <div className="mt-2 flex gap-4 text-xs text-slate-500">
-                      <span>IRR: {provider.avgROI}%</span>
-                      <span>
-                        {t("الاسترداد", "Payback")}: {provider.paybackMonths}{" "}
-                        {t("شهر", "mo")}
-                      </span>
-                      <span>
-                        {t("جاهزية", "Readiness")}: {provider.readinessScore}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+          {/* Provider matching table */}
+          <Panel
+            title={t("مقدمو الحلول المطابقون", "Matched Solution Providers")}
+            subtitle={t(
+              "بناءً على تقييم سيري ومتطلبات مسار الرقمنة الأساسية",
+              "Based on SERI assessment and basic digitization path requirements"
+            )}
+          >
+            <DataTable
+              headers={[
+                t("مقدم الخدمة", "Provider"),
+                t("الحلول", "Solutions"),
+                "IRR",
+                t("الاسترداد", "Payback"),
+                t("الحالة", "Status"),
+                "",
+              ]}
+              rows={providerRows}
+            />
+          </Panel>
         </div>
 
-        {/* Sidebar: Badges + Innovation + Training */}
+        {/* Sidebar */}
         <div className="space-y-6">
-          <Card>
-            <h3 className="mb-3 text-lg font-bold text-slate-900">
-              {t("الشارات", "Badges")}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {demoFactory.badges.map((bId) => {
-                const b = badges.find((bd) => bd.id === bId);
-                return b ? (
-                  <Badge key={bId} variant="success">
-                    {t(b.labelAr, b.labelEn)}
-                  </Badge>
-                ) : null;
-              })}
-            </div>
-          </Card>
+          <Panel title={t("بيانات الطلب", "Application Details")}>
+            <dl className="space-y-3 text-sm">
+              {[
+                [t("رقم الطلب", "Ref"), factoryDetails.applicationRef],
+                [t("البرنامج", "Program"), factoryDetails.program],
+                [t("المستشار", "Consultant"), factoryDetails.consultant],
+                [t("المرحلة الحالية", "Current Stage"), t("مطابقة مقدمي الخدمات", "Provider Matching")],
+              ].map(([label, value]) => (
+                <div key={String(label)} className="flex justify-between gap-4 border-b border-[var(--border)] pb-2">
+                  <dt className="text-[var(--muted)]">{label}</dt>
+                  <dd className="text-end font-medium text-[var(--navy)]">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Panel>
 
-          <Card className="border-amber-200 bg-amber-50/30">
-            <div className="mb-2 flex items-center gap-2 text-amber-700">
-              <Lightbulb className="h-5 w-5" />
-              <h3 className="font-bold">
-                {t("مسار الابتكار", "Innovation Path")}
-              </h3>
-            </div>
-            <ul className="space-y-1 text-sm text-slate-600">
-              <li>{t("• TRL 4-7 مؤهل", "• TRL 4-7 eligible")}</li>
-              <li>{t("• تمويل 70% — حد أقصى 2M ريال", "• 70% funding — SAR 2M cap")}</li>
-              <li>{t("• مراجعة + تحكيم + صرف دفعات", "• Review + judging + disbursement")}</li>
+          <Panel title={t("إنجازات مكتملة", "Completed Steps")}>
+            <ul className="space-y-2 text-sm">
+              {[
+                t("التحقق من بيانات المنشأة", "Entity data verified"),
+                t("التقييم الذاتي — مؤشر سيري", "Self-assessment — SERI"),
+                t("تعيين مستشار معتمد", "Consultant assigned"),
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-[var(--foreground)]">
+                  <span className="text-[var(--navy)]">✓</span>
+                  {item}
+                </li>
+              ))}
             </ul>
-          </Card>
+          </Panel>
 
-          <Card>
-            <div className="mb-2 flex items-center gap-2 text-blue-700">
-              <GraduationCap className="h-5 w-5" />
-              <h3 className="font-bold">
-                {t("الدورات والورش", "Training & Workshops")}
-              </h3>
-            </div>
-            <div className="space-y-2">
+          <Panel title={t("دورات متاحة", "Available Training")}>
+            <div className="space-y-3">
               {trainingPrograms.map((tp) => (
-                <div
-                  key={tp.id}
-                  className="rounded-lg bg-slate-50 p-2 text-sm"
-                >
-                  <p className="font-medium text-slate-800">
-                    {t(tp.titleAr, tp.titleEn)}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {tp.duration} · {tp.format}
-                  </p>
+                <div key={tp.id} className="border-b border-[var(--border)] pb-2 last:border-0">
+                  <p className="text-sm font-medium">{t(tp.titleAr, tp.titleEn)}</p>
+                  <p className="text-xs text-[var(--muted)]">{tp.duration}</p>
                 </div>
               ))}
             </div>
-          </Card>
+          </Panel>
 
           <Link
             href="/advisor"
-            className="block rounded-xl bg-emerald-700 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-800"
+            className="block border border-[var(--border)] bg-white px-4 py-2.5 text-center text-sm text-[var(--navy)] hover:bg-[#fafbfc]"
           >
-            {t("إعادة التقييم مع المستشار الذكي", "Re-assess with AI Advisor")}
+            {t("تحديث التقييم الأولي", "Update Initial Assessment")}
           </Link>
         </div>
       </div>

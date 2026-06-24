@@ -2,22 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Sparkles, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { useApp } from "@/lib/context";
 import { assessmentQuestions } from "@/lib/mock-data";
 import { analyzeAssessment } from "@/lib/ai-engine";
-import type { AssessmentAnswer } from "@/lib/types";
-import { Card, Badge, ProgressBar, SectionTitle } from "@/components/ui";
+import type { AssessmentAnswer, InitiativePath } from "@/lib/types";
+import { Panel, ProgressLine, SectionTitle, StepBar, Tag } from "@/components/ui";
+
+const pathLabels: Record<InitiativePath, { ar: string; en: string }> = {
+  transformation: { ar: "مسار التحول الصناعي — مصانع المستقبل", en: "Industrial Transformation — Future Factories" },
+  innovation: { ar: "مسار الابتكار — منح المصانع الابتكارية", en: "Innovation — Factory Innovation Grants" },
+  training: { ar: "الدورات وورش العمل", en: "Training & Workshops" },
+  marketplace: { ar: "اعتماد مقدم خدمة", en: "Service Provider Registration" },
+};
+
+const pathLinks: Record<string, string> = {
+  transformation: "/factory",
+  innovation: "/factory",
+  training: "/factory",
+  marketplace: "/provider",
+};
 
 export default function AdvisorPage() {
   const { t, lang } = useApp();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<AssessmentAnswer[]>([]);
   const [showResult, setShowResult] = useState(false);
-  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
   const currentQ = assessmentQuestions[step];
   const progress = Math.round(((step + (showResult ? 1 : 0)) / assessmentQuestions.length) * 100);
+  const recommendation = showResult ? analyzeAssessment(answers) : null;
 
   const handleAnswer = (value: string) => {
     const updated = [
@@ -25,7 +38,6 @@ export default function AdvisorPage() {
       { questionId: currentQ.id, value },
     ];
     setAnswers(updated);
-
     if (step < assessmentQuestions.length - 1) {
       setStep(step + 1);
     } else {
@@ -33,139 +45,122 @@ export default function AdvisorPage() {
     }
   };
 
-  const recommendation = showResult ? analyzeAssessment(answers) : null;
-
-  const pathLinks: Record<string, string> = {
-    transformation: "/factory",
-    innovation: "/factory",
-    training: "/factory",
-    marketplace: "/provider",
-  };
+  const stepLabels = assessmentQuestions.map((q) =>
+    t(q.questionAr.slice(0, 12) + "…", q.questionEn.slice(0, 12) + "…")
+  );
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-3xl px-4 py-8">
       <SectionTitle
-        title={t("المستشار الذكي", "AI Journey Advisor")}
+        title={t("تحديد المسار — استبيان أولي", "Path Assessment — Initial Survey")}
         subtitle={t(
-          "أجب على الأسئلة وسيوجّهك الذكاء الاصطناعي للمسار المناسب",
-          "Answer questions and AI will guide you to the right initiative path"
+          "نموذج FF-INT-001 — يُستخدم لتحديد البرنامج والمسار المناسب",
+          "Form FF-INT-001 — used to determine the appropriate program and path"
         )}
       />
 
-      <ProgressBar value={progress} label={t("التقدم", "Progress")} />
+      <Panel className="mb-6">
+        <StepBar steps={stepLabels.slice(0, 4)} current={Math.min(step, 3)} />
+        <div className="mt-4">
+          <ProgressLine value={progress} label={t("اكتمال الاستبيان", "Survey Completion")} />
+        </div>
+      </Panel>
 
-      <div className="mt-8">
-        {!showResult ? (
-          <Card className="animate-fade-in">
-            <div className="mb-4 flex items-center gap-2 text-emerald-700">
-              <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-medium">
-                {t(`سؤال ${step + 1} من ${assessmentQuestions.length}`, `Question ${step + 1} of ${assessmentQuestions.length}`)}
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">
-              {t(currentQ.questionAr, currentQ.questionEn)}
-            </h3>
-            <div className="mt-6 grid gap-3">
-              {currentQ.options.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleAnswer(opt.value)}
-                  className="rounded-xl border border-slate-200 px-4 py-3 text-start text-sm font-medium text-slate-700 transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-800"
-                >
-                  {t(opt.labelAr, opt.labelEn)}
-                </button>
-              ))}
-            </div>
-            {step > 0 && (
+      {!showResult ? (
+        <Panel className="animate-fade-in">
+          <p className="text-xs font-medium text-[var(--muted)]">
+            {t(`السؤال ${step + 1} من ${assessmentQuestions.length}`, `Question ${step + 1} of ${assessmentQuestions.length}`)}
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-[var(--navy)]">
+            {t(currentQ.questionAr, currentQ.questionEn)}
+          </h3>
+          <div className="mt-5 space-y-2">
+            {currentQ.options.map((opt) => (
               <button
-                onClick={() => setStep(step - 1)}
-                className="mt-4 text-sm text-slate-500 hover:text-emerald-700"
+                key={opt.value}
+                onClick={() => handleAnswer(opt.value)}
+                className="block w-full border border-[var(--border)] px-4 py-3 text-start text-sm transition hover:border-[var(--navy)] hover:bg-[#fafbfc]"
               >
-                {t("← السابق", "← Previous")}
+                {t(opt.labelAr, opt.labelEn)}
               </button>
-            )}
-          </Card>
-        ) : (
-          recommendation && (
-            <div className="animate-fade-in space-y-6">
-              <Card className="border-emerald-200 bg-emerald-50/30">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white">
-                    <Sparkles className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-emerald-600">
-                      {t("توصية الذكاء الاصطناعي", "AI Recommendation")}
-                    </p>
-                    <p className="text-lg font-bold text-slate-900">
-                      {t("ثقة", "Confidence")}: {recommendation.confidence}%
-                    </p>
-                  </div>
+            ))}
+          </div>
+          {step > 0 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="mt-4 text-sm text-[var(--muted)] hover:text-[var(--navy)]"
+            >
+              {t("السابق", "Previous")}
+            </button>
+          )}
+        </Panel>
+      ) : (
+        recommendation && (
+          <div className="animate-fade-in space-y-4">
+            <Panel title={t("نتيجة التقييم", "Assessment Result")}>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-[var(--muted)]">{t("المسار المقترح", "Recommended Path")}</p>
+                  <p className="mt-1 text-lg font-semibold text-[var(--navy)]">
+                    {t(pathLabels[recommendation.path].ar, pathLabels[recommendation.path].en)}
+                  </p>
                 </div>
 
                 {recommendation.eligibleForGrant && (
-                  <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+                  <div className="border-r-4 border-[var(--gold)] bg-[var(--gold-light)] px-4 py-3 text-sm">
                     {t(
-                      `مؤهل لمنحة الابتكار — TRL ${recommendation.trlLevel} — تمويل حتى 70% بحد أقصى 2M ريال`,
-                      `Eligible for innovation grant — TRL ${recommendation.trlLevel} — up to 70% funding capped at SAR 2M`
+                      `مؤهل لمنحة المصانع الابتكارية — TRL ${recommendation.trlLevel} — تمويل حتى 70% (حد أقصى 2,000,000 ريال)`,
+                      `Eligible for Innovation Factory Grant — TRL ${recommendation.trlLevel} — up to 70% (max SAR 2,000,000)`
                     )}
                   </div>
                 )}
 
-                <div className="mt-4">
-                  <h4 className="mb-2 font-semibold text-slate-800">
-                    {t("الأسباب", "Reasons")}
-                  </h4>
-                  <ul className="space-y-1">
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase text-[var(--muted)]">
+                    {t("مبررات التوجيه", "Routing Rationale")}
+                  </p>
+                  <ul className="space-y-1.5 text-sm text-[var(--foreground)]">
                     {recommendation.reasons.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <li key={i} className="flex gap-2">
+                        <span className="text-[var(--muted)]">{i + 1}.</span>
                         {t(r.ar, r.en)}
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="mt-4">
-                  <h4 className="mb-2 font-semibold text-slate-800">
-                    {t("الخطوات التالية", "Next Steps")}
-                  </h4>
-                  <ul className="space-y-1">
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase text-[var(--muted)]">
+                    {t("الإجراءات المطلوبة", "Required Actions")}
+                  </p>
+                  <ol className="space-y-1.5 text-sm">
                     {recommendation.nextSteps.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
-                          {i + 1}
-                        </span>
+                      <li key={i} className="flex gap-2">
+                        <span className="font-medium text-[var(--navy)]">{i + 1}.</span>
                         {t(s.ar, s.en)}
                       </li>
                     ))}
-                  </ul>
+                  </ol>
                 </div>
-              </Card>
+              </div>
+            </Panel>
 
-              <Link
-                href={pathLinks[recommendation.path] || "/factory"}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 py-3 font-semibold text-white transition hover:bg-emerald-800"
-              >
-                {t("متابعة الرحلة", "Continue Journey")}
-                <Arrow className="h-5 w-5" />
-              </Link>
+            <Link
+              href={pathLinks[recommendation.path] || "/factory"}
+              className="block bg-[var(--navy)] px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[var(--navy-light)]"
+            >
+              {t("متابعة إلى الملف", "Continue to Profile")}
+            </Link>
 
-              <button
-                onClick={() => {
-                  setStep(0);
-                  setAnswers([]);
-                  setShowResult(false);
-                }}
-                className="w-full text-center text-sm text-slate-500 hover:text-emerald-700"
-              >
-                {t("إعادة التقييم", "Retake Assessment")}
-              </button>
-            </div>
-          )
-        )}
-      </div>
+            <button
+              onClick={() => { setStep(0); setAnswers([]); setShowResult(false); }}
+              className="w-full py-2 text-center text-sm text-[var(--muted)] hover:text-[var(--navy)]"
+            >
+              {t("إعادة الاستبيان", "Retake Survey")}
+            </button>
+          </div>
+        )
+      )}
     </div>
   );
 }

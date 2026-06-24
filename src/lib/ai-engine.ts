@@ -145,8 +145,8 @@ export function validateProviderForm(
     results.push({
       field: "cr",
       status: "valid",
-      messageAr: "السجل التجاري صالح — تم التحقق تلقائياً",
-      messageEn: "CR valid — auto-verified",
+      messageAr: "السجل التجاري — مطابق لسجل وزارة التجارة",
+      messageEn: "CR verified against Ministry of Commerce",
     });
     score += 15;
   } else {

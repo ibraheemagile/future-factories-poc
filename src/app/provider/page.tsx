@@ -1,32 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Upload,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  Shield,
-} from "lucide-react";
 import { useApp } from "@/lib/context";
 import { providerRequirements } from "@/lib/mock-data";
 import { validateProviderForm } from "@/lib/ai-engine";
 import type { ProviderFormData } from "@/lib/types";
-import { Card, Badge, ProgressBar, SectionTitle } from "@/components/ui";
+import { Panel, Tag, ProgressLine, SectionTitle } from "@/components/ui";
 
 const ERP_MODULES = ["ERP", "SCM", "CRM", "APS", "WMS", "PLM"];
-
-const statusIcon = {
-  valid: CheckCircle,
-  warning: AlertTriangle,
-  error: XCircle,
-};
-
-const statusColor = {
-  valid: "text-emerald-600",
-  warning: "text-amber-600",
-  error: "text-red-600",
-};
 
 export default function ProviderPage() {
   const { t } = useApp();
@@ -61,87 +42,82 @@ export default function ProviderPage() {
     update("modules", mods);
   };
 
+  const statusTone = (s: string) =>
+    s === "valid" ? "green" : s === "warning" ? "amber" : "red";
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <SectionTitle
-        title={t("تسجيل مقدم الخدمات", "Service Provider Registration")}
+        title={t("طلب اعتماد مقدم خدمة", "Service Provider Approval Request")}
         subtitle={t(
-          "أتمتة التحقق من المتطلبات — بناءً على متطلبات برنامج مصانع المستقبل",
-          "Automated requirement verification — based on Future Factories program requirements"
+          "متطلبات برنامج مصانع المستقبل — مسار الرقمنة الأساسية (Future Factories)",
+          "Future Factories Program requirements — Basic Digitization Path"
         )}
       />
 
-      {/* Solution Type Toggle */}
-      <div className="mb-6 flex gap-3">
+      <div className="mb-6 flex gap-2">
         {(["erp", "ot_automation"] as const).map((type) => (
           <button
             key={type}
-            onClick={() => {
-              setSolutionType(type);
-              update("solutionType", type);
-            }}
-            className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+            onClick={() => { setSolutionType(type); update("solutionType", type); }}
+            className={`px-4 py-2 text-sm font-medium ${
               solutionType === type
-                ? "bg-emerald-700 text-white"
-                : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                ? "bg-[var(--navy)] text-white"
+                : "border border-[var(--border)] bg-white text-[var(--muted)]"
             }`}
           >
             {type === "erp"
-              ? t("أنظمة إدارة الموارد (ERP)", "ERP Systems")
+              ? t("أنظمة ERP", "ERP Systems")
               : t("أتمتة OT", "OT Automation")}
           </button>
         ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        {/* Form */}
         <div className="space-y-4 lg:col-span-3">
-          <Card>
-            <h3 className="mb-4 font-bold text-slate-900">
-              {t(req.titleAr, req.titleEn)}
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  {t("السجل التجاري", "Commercial Registration")}
-                </label>
-                <input
-                  type="text"
-                  value={form.commercialRegistration}
-                  onChange={(e) => update("commercialRegistration", e.target.value)}
-                  placeholder="1010123456"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  {t("عنوان المقر في السعودية", "Saudi HQ Address")}
-                </label>
-                <input
-                  type="text"
-                  value={form.saudiAddress}
-                  onChange={(e) => update("saudiAddress", e.target.value)}
-                  placeholder={t("الرياض، حي ...", "Riyadh, district ...")}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
-                />
+          <Panel title={t(req.titleAr, req.titleEn)}>
+            <div className="space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-[var(--muted)]">
+                    {t("رقم السجل التجاري", "Commercial Registration No.")}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.commercialRegistration}
+                    onChange={(e) => update("commercialRegistration", e.target.value)}
+                    placeholder="4030127891"
+                    className="w-full border border-[var(--border)] px-3 py-2 text-sm focus:border-[var(--navy)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-[var(--muted)]">
+                    {t("المدينة — عنوان المقر", "City — HQ Address")}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.saudiAddress}
+                    onChange={(e) => update("saudiAddress", e.target.value)}
+                    placeholder={t("الرياض", "Riyadh")}
+                    className="w-full border border-[var(--border)] px-3 py-2 text-sm focus:border-[var(--navy)] focus:outline-none"
+                  />
+                </div>
               </div>
 
               {solutionType === "erp" && (
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    {t("الأنظمة الفرعية", "Sub-modules")}
+                  <label className="mb-2 block text-xs font-medium text-[var(--muted)]">
+                    {t("الأنظمة الفرعية المطلوبة", "Required Sub-modules")}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {ERP_MODULES.map((mod) => (
                       <button
                         key={mod}
                         onClick={() => toggleModule(mod)}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                        className={`px-3 py-1.5 text-xs font-medium ${
                           form.modules.includes(mod)
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "border border-slate-200 text-slate-500"
+                            ? "bg-[var(--navy)] text-white"
+                            : "border border-[var(--border)] text-[var(--muted)]"
                         }`}
                       >
                         {mod}
@@ -156,168 +132,135 @@ export default function ProviderPage() {
                   type="checkbox"
                   checked={form.otIntegration}
                   onChange={(e) => update("otIntegration", e.target.checked)}
-                  className="rounded border-slate-300 text-emerald-600"
                 />
-                {t("النظام قابل للربط مع أنظمة OT", "System supports OT integration")}
+                {t("النظام قابل للربط مع أنظمة OT", "Supports OT system integration")}
               </label>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    IRR %
-                  </label>
+                  <label className="mb-1 block text-xs font-medium text-[var(--muted)]">IRR %</label>
                   <input
                     type="text"
                     value={form.avgROI}
                     onChange={(e) => update("avgROI", e.target.value)}
-                    placeholder="28"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                    className="w-full border border-[var(--border)] px-3 py-2 text-sm focus:border-[var(--navy)] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[var(--muted)]">
                     {t("فترة الاسترداد (شهر)", "Payback (months)")}
                   </label>
                   <input
                     type="text"
                     value={form.paybackPeriod}
                     onChange={(e) => update("paybackPeriod", e.target.value)}
-                    placeholder="18"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                    className="w-full border border-[var(--border)] px-3 py-2 text-sm focus:border-[var(--navy)] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                  <label className="mb-1 block text-xs font-medium text-[var(--muted)]">
                     {t("البريد الإلكتروني", "Email")}
                   </label>
                   <input
                     type="email"
                     value={form.contactEmail}
                     onChange={(e) => update("contactEmail", e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                    className="w-full border border-[var(--border)] px-3 py-2 text-sm focus:border-[var(--navy)] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    {t("رقم الجوال", "Phone")}
+                  <label className="mb-1 block text-xs font-medium text-[var(--muted)]">
+                    {t("رقم التواصل", "Phone")}
                   </label>
                   <input
                     type="tel"
                     value={form.contactPhone}
                     onChange={(e) => update("contactPhone", e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
+                    className="w-full border border-[var(--border)] px-3 py-2 text-sm focus:border-[var(--navy)] focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* Simulated uploads */}
               <div className="grid gap-3 sm:grid-cols-2">
                 <button
-                  onClick={() =>
-                    update("invoicesUploaded", Math.min(form.invoicesUploaded + 1, 3))
-                  }
-                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 p-4 text-sm text-slate-500 transition hover:border-emerald-400 hover:text-emerald-700"
+                  type="button"
+                  onClick={() => update("invoicesUploaded", Math.min(form.invoicesUploaded + 1, 3))}
+                  className="border border-dashed border-[var(--border)] px-4 py-3 text-start text-sm text-[var(--muted)] hover:border-[var(--navy)]"
                 >
-                  <Upload className="h-5 w-5" />
-                  {t(
-                    `فواتير ضريبية (${form.invoicesUploaded}/3)`,
-                    `Tax Invoices (${form.invoicesUploaded}/3)`
-                  )}
+                  {t(`فواتير ضريبية (${form.invoicesUploaded}/3)`, `Tax invoices (${form.invoicesUploaded}/3)`)}
+                  <span className="mt-1 block text-xs">{t("اضغط لإرفاق", "Click to attach")}</span>
                 </button>
                 <button
-                  onClick={() =>
-                    update("factoryReferences", Math.min(form.factoryReferences + 1, 3))
-                  }
-                  className="flex items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 p-4 text-sm text-slate-500 transition hover:border-emerald-400 hover:text-emerald-700"
+                  type="button"
+                  onClick={() => update("factoryReferences", Math.min(form.factoryReferences + 1, 3))}
+                  className="border border-dashed border-[var(--border)] px-4 py-3 text-start text-sm text-[var(--muted)] hover:border-[var(--navy)]"
                 >
-                  <Upload className="h-5 w-5" />
-                  {t(
-                    `مصانع مرجعية (${form.factoryReferences}/3)`,
-                    `Factory References (${form.factoryReferences}/3)`
-                  )}
+                  {t(`مصانع مرجعية (${form.factoryReferences}/3)`, `Factory refs (${form.factoryReferences}/3)`)}
+                  <span className="mt-1 block text-xs">{t("حد أدنى 3 مصانع", "Minimum 3 factories")}</span>
                 </button>
               </div>
             </div>
 
             <button
               onClick={() => setValidated(true)}
-              className="mt-6 w-full rounded-xl bg-emerald-700 px-6 py-3 font-semibold text-white transition hover:bg-emerald-800"
+              className="mt-6 w-full bg-[var(--navy)] py-3 text-sm font-semibold text-white hover:bg-[var(--navy-light)]"
             >
-              <Shield className="mr-2 inline h-5 w-5" />
-              {t("تحقق تلقائي (AI)", "Auto-Validate (AI)")}
+              {t("التحقق من اكتمال الطلب", "Validate Application")}
             </button>
-          </Card>
+          </Panel>
         </div>
 
-        {/* Validation Results */}
         <div className="lg:col-span-2">
-          <Card className="sticky top-24">
-            <h3 className="mb-4 font-bold text-slate-900">
-              {t("نتائج التحقق", "Validation Results")}
-            </h3>
-
+          <Panel
+            title={t("نتيجة التحقق", "Validation Result")}
+            className="sticky top-24"
+          >
             {!validation ? (
-              <p className="text-sm text-slate-400">
-                {t(
-                  "املأ النموذج واضغط تحقق تلقائي",
-                  "Fill the form and click Auto-Validate"
-                )}
+              <p className="text-sm text-[var(--muted)]">
+                {t("أكمل النموذج واضغط التحقق", "Complete the form and validate")}
               </p>
             ) : (
               <div className="space-y-4">
-                <ProgressBar
+                <ProgressLine
                   value={validation.readinessScore}
-                  label={t("جاهزية مقدم الخدمات", "Provider Readiness")}
+                  label={t("نسبة الاكتمال", "Completion Rate")}
                 />
-
-                <div className="space-y-2">
-                  {validation.results.map((r, i) => {
-                    const Icon = statusIcon[r.status];
-                    return (
-                      <div key={i} className="flex items-start gap-2 text-sm">
-                        <Icon
-                          className={`mt-0.5 h-4 w-4 shrink-0 ${statusColor[r.status]}`}
-                        />
-                        <span className="text-slate-600">
-                          {t(r.messageAr, r.messageEn)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
+                <ul className="space-y-2">
+                  {validation.results.map((r, i) => (
+                    <li key={i} className="flex items-start justify-between gap-2 text-sm">
+                      <span className="text-[var(--foreground)]">{t(r.messageAr, r.messageEn)}</span>
+                      <Tag tone={statusTone(r.status) as "green" | "amber" | "red"}>
+                        {r.status === "valid" ? "✓" : r.status === "warning" ? "!" : "✗"}
+                      </Tag>
+                    </li>
+                  ))}
+                </ul>
                 {validation.readinessScore >= 80 ? (
-                  <Badge variant="success">
-                    {t("جاهز للاعتماد", "Ready for Approval")}
-                  </Badge>
+                  <Tag tone="green">{t("جاهز للاعتماد", "Ready for Approval")}</Tag>
                 ) : validation.readinessScore >= 50 ? (
-                  <Badge variant="warning">
-                    {t("يحتاج استكمال", "Needs Completion")}
-                  </Badge>
+                  <Tag tone="amber">{t("ناقص — يتطلب استكمال", "Incomplete — Action Required")}</Tag>
                 ) : (
-                  <Badge variant="error">
-                    {t("غير مكتمل", "Incomplete")}
-                  </Badge>
+                  <Tag tone="red">{t("غير مكتمل", "Incomplete")}</Tag>
                 )}
               </div>
             )}
 
-            <div className="mt-6 border-t border-slate-100 pt-4">
-              <h4 className="mb-2 text-sm font-semibold text-slate-700">
-                {t("المتطلبات المطلوبة", "Required Fields")}
-              </h4>
+            <div className="mt-6 border-t border-[var(--border)] pt-4">
+              <p className="mb-2 text-xs font-semibold text-[var(--muted)]">
+                {t("المتطلبات حسب البريد الرسمي", "Requirements per official email")}
+              </p>
               <ul className="space-y-1">
                 {req.fields.map((f) => (
-                  <li key={f.id} className="text-xs text-slate-500">
-                    • {t(f.labelAr, f.labelEn)}
+                  <li key={f.id} className="text-xs text-[var(--muted)]">
+                    · {t(f.labelAr, f.labelEn)}
                   </li>
                 ))}
               </ul>
             </div>
-          </Card>
+          </Panel>
         </div>
       </div>
     </div>

@@ -1,176 +1,99 @@
 "use client";
 
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  FileSearch,
-  Flag,
-  Sparkles,
-} from "lucide-react";
 import { useApp } from "@/lib/context";
 import { operatorCases } from "@/lib/mock-data";
-import { Card, Badge, SectionTitle } from "@/components/ui";
+import { Panel, Tag, Stat, SectionTitle, DataTable } from "@/components/ui";
 
-const typeIcons = {
-  exception: Flag,
-  verification: FileSearch,
-  grant_review: Sparkles,
-  milestone: CheckCircle,
+const typeLabels = {
+  exception: { ar: "استثناء", en: "Exception" },
+  verification: { ar: "تحقق", en: "Verification" },
+  grant_review: { ar: "منحة", en: "Grant" },
+  milestone: { ar: "مرحلة", en: "Milestone" },
 };
 
-const priorityVariant = {
-  high: "error" as const,
-  medium: "warning" as const,
-  low: "default" as const,
+const priorityTone = {
+  high: "red" as const,
+  medium: "amber" as const,
+  low: "neutral" as const,
 };
 
 const statusLabels = {
   pending: { ar: "معلق", en: "Pending" },
   in_review: { ar: "قيد المراجعة", en: "In Review" },
-  resolved: { ar: "تم الحل", en: "Resolved" },
+  resolved: { ar: "مغلق", en: "Closed" },
 };
 
 export default function OperatorPage() {
   const { t } = useApp();
 
   const stats = {
-    exceptions: operatorCases.filter((c) => c.type === "exception").length,
     pending: operatorCases.filter((c) => c.status === "pending").length,
     inReview: operatorCases.filter((c) => c.status === "in_review").length,
     high: operatorCases.filter((c) => c.priority === "high").length,
+    exceptions: operatorCases.filter((c) => c.type === "exception").length,
   };
 
+  const rows = operatorCases.map((c) => [
+    c.entity,
+    t(typeLabels[c.type].ar, typeLabels[c.type].en),
+    <span key={`t-${c.id}`} className="font-medium">{t(c.titleAr, c.titleEn)}</span>,
+    <Tag key={`p-${c.id}`} tone={priorityTone[c.priority]}>
+      {c.priority === "high" ? t("عاجل", "Urgent") : c.priority === "medium" ? t("متوسط", "Medium") : t("منخفض", "Low")}
+    </Tag>,
+    <Tag key={`s-${c.id}`} tone={c.status === "pending" ? "amber" : c.status === "in_review" ? "blue" : "green"}>
+      {t(statusLabels[c.status].ar, statusLabels[c.status].en)}
+    </Tag>,
+    <button key={`a-${c.id}`} className="text-xs font-medium text-[var(--navy)] underline">
+      {t("مراجعة", "Review")}
+    </button>,
+  ]);
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <SectionTitle
-        title={t("لوحة التشغيل", "Operations Dashboard")}
+        title={t("لوحة متابعة التشغيل", "Operations Monitoring")}
         subtitle={t(
-          "مراجعة استثنائية فقط — تقليل التدخل البشري والتركيز على الحالات التي تحتاج قرار",
-          "Exception-based review only — minimize human intervention, focus on cases needing decisions"
+          "مراجعة الطلبات التي تتطلب إجراء — باقي الطلبات تُعالج تلقائياً",
+          "Applications requiring action — remaining requests processed automatically"
         )}
       />
 
-      {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            labelAr: "استثناءات",
-            labelEn: "Exceptions",
-            value: stats.exceptions,
-            icon: AlertTriangle,
-            color: "text-red-600 bg-red-50",
-          },
-          {
-            labelAr: "معلق",
-            labelEn: "Pending",
-            value: stats.pending,
-            icon: Clock,
-            color: "text-amber-600 bg-amber-50",
-          },
-          {
-            labelAr: "قيد المراجعة",
-            labelEn: "In Review",
-            value: stats.inReview,
-            icon: FileSearch,
-            color: "text-blue-600 bg-blue-50",
-          },
-          {
-            labelAr: "أولوية عالية",
-            labelEn: "High Priority",
-            value: stats.high,
-            icon: Flag,
-            color: "text-red-600 bg-red-50",
-          },
-        ].map((s) => {
-          const Icon = s.icon;
-          return (
-            <Card key={s.labelEn} className="flex items-center gap-4">
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-xl ${s.color}`}
-              >
-                <Icon className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                <p className="text-sm text-slate-500">
-                  {t(s.labelAr, s.labelEn)}
-                </p>
-              </div>
-            </Card>
-          );
-        })}
+      <div className="mb-6 grid grid-cols-2 gap-px bg-[var(--border)] md:grid-cols-4">
+        <Stat label={t("معلق", "Pending")} value={stats.pending} />
+        <Stat label={t("قيد المراجعة", "In Review")} value={stats.inReview} />
+        <Stat label={t("عاجل", "Urgent")} value={stats.high} />
+        <Stat label={t("استثناءات", "Exceptions")} value={stats.exceptions} />
       </div>
 
-      {/* Philosophy Banner */}
-      <Card className="mb-8 border-emerald-200 bg-emerald-50/40">
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
-          <div>
-            <p className="font-semibold text-emerald-800">
-              {t("فلسفة التشغيل", "Operations Philosophy")}
-            </p>
-            <p className="mt-1 text-sm text-slate-600">
-              {t(
-                "الذكاء الاصطناعي يعالج 90% من الطلبات تلقائياً. فريق التشغيل يراجع فقط: الاستثناءات، عدم تطابق البيانات، والحالات التي تحتاج قرار بشري.",
-                "AI handles 90% of requests automatically. Operations team reviews only: exceptions, data mismatches, and cases requiring human decisions."
-              )}
-            </p>
-          </div>
-        </div>
-      </Card>
+      <Panel title={t("قائمة المتابعة", "Action Queue")}>
+        <DataTable
+          headers={[
+            t("رقم الطلب", "Ref"),
+            t("النوع", "Type"),
+            t("الوصف", "Description"),
+            t("الأولوية", "Priority"),
+            t("الحالة", "Status"),
+            "",
+          ]}
+          rows={rows}
+        />
+      </Panel>
 
-      {/* Cases */}
-      <div className="space-y-4">
-        {operatorCases.map((c) => {
-          const Icon = typeIcons[c.type];
-          return (
-            <Card
-              key={c.id}
-              className="transition hover:border-emerald-200 hover:shadow-sm"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50">
-                    <Icon className="h-5 w-5 text-slate-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900">
-                      {t(c.titleAr, c.titleEn)}
-                    </h3>
-                    <p className="text-sm text-slate-500">{c.entity}</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Badge variant={priorityVariant[c.priority]}>
-                    {c.priority}
-                  </Badge>
-                  <Badge variant="info">
-                    {t(
-                      statusLabels[c.status].ar,
-                      statusLabels[c.status].en
-                    )}
-                  </Badge>
-                </div>
+      <div className="mt-6 space-y-3">
+        {operatorCases.map((c) => (
+          <Panel key={c.id} className="!p-0">
+            <div className="px-5 py-3">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+                <span>{c.entity}</span>
+                <span>·</span>
+                <span>{t(typeLabels[c.type].ar, typeLabels[c.type].en)}</span>
               </div>
-
-              <div className="mt-3 rounded-lg bg-slate-50 p-3">
-                <p className="text-sm text-slate-600">
-                  {t(c.aiSummary.ar, c.aiSummary.en)}
-                </p>
-              </div>
-
-              <div className="mt-3 flex gap-2">
-                <button className="rounded-lg bg-emerald-700 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-800">
-                  {t("مراجعة", "Review")}
-                </button>
-                <button className="rounded-lg border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50">
-                  {t("تفاصيل", "Details")}
-                </button>
-              </div>
-            </Card>
-          );
-        })}
+              <p className="mt-1 text-sm text-[var(--foreground)]">
+                {t(c.aiSummary.ar, c.aiSummary.en)}
+              </p>
+            </div>
+          </Panel>
+        ))}
       </div>
     </div>
   );

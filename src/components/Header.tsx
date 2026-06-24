@@ -2,24 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Building2,
-  Factory,
-  LayoutDashboard,
-  Sparkles,
-  Store,
-  Presentation,
-} from "lucide-react";
 import { useApp } from "@/lib/context";
-import { VISION } from "@/lib/mock-data";
 
 const navItems = [
-  { href: "/", labelAr: "الرئيسية", labelEn: "Home", icon: Building2 },
-  { href: "/advisor", labelAr: "المستشار الذكي", labelEn: "AI Advisor", icon: Sparkles },
-  { href: "/factory", labelAr: "رحلة المصنع", labelEn: "Factory Journey", icon: Factory },
-  { href: "/provider", labelAr: "مقدم الخدمات", labelEn: "Service Provider", icon: Store },
-  { href: "/operator", labelAr: "لوحة التشغيل", labelEn: "Operations", icon: LayoutDashboard },
-  { href: "/pitch", labelAr: "العرض التقديمي", labelEn: "Pitch", icon: Presentation },
+  { href: "/", labelAr: "الرئيسية", labelEn: "Home" },
+  { href: "/advisor", labelAr: "تحديد المسار", labelEn: "Path Assessment" },
+  { href: "/factory", labelAr: "ملف المصنع", labelEn: "Factory Profile" },
+  { href: "/provider", labelAr: "اعتماد مقدم الخدمة", labelEn: "Provider Registration" },
+  { href: "/operator", labelAr: "لوحة المتابعة", labelEn: "Operations" },
 ];
 
 export function Header() {
@@ -27,35 +17,42 @@ export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-emerald-900/10 bg-white/90 backdrop-blur-md">
+    <header className="border-b border-[var(--border)] bg-white">
+      <div className="bg-[var(--navy)] px-4 py-2 text-xs text-white/70">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <span>{t("وزارة الصناعة والثروة المعدنية", "Ministry of Industry and Mineral Resources")}</span>
+          <span className="hidden sm:inline">{t("المملكة العربية السعودية", "Kingdom of Saudi Arabia")}</span>
+        </div>
+      </div>
+
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white">
-            <Building2 className="h-5 w-5" />
+          <div className="flex h-11 w-11 items-center justify-center border border-[var(--gold)] bg-[var(--navy)] text-sm font-bold text-[var(--gold)]">
+            MIM
           </div>
-          <div className="hidden sm:block">
-            <p className="text-sm font-bold text-emerald-900">
-              {t(VISION.titleAr, VISION.titleEn)}
+          <div>
+            <p className="text-sm font-bold text-[var(--navy)]">
+              {t("مركز القدرات الصناعية", "Industrial Capabilities Center")}
             </p>
-            <p className="text-xs text-slate-500">POC · Planning Phase</p>
+            <p className="text-xs text-[var(--muted)]">
+              {t("بوابة المبادرات الصناعية", "Industrial Initiatives Portal")}
+            </p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-0.5 md:flex">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const active = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-emerald-50 text-emerald-800"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-emerald-700"
+                    ? "border-b-2 border-[var(--gold)] text-[var(--navy)]"
+                    : "text-[var(--muted)] hover:text-[var(--navy)]"
                 }`}
               >
-                <Icon className="h-4 w-4" />
                 {t(item.labelAr, item.labelEn)}
               </Link>
             );
@@ -64,23 +61,23 @@ export function Header() {
 
         <button
           onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800 transition hover:bg-emerald-100"
+          className="border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--navy)] hover:bg-[var(--gold-light)]"
         >
-          {lang === "ar" ? "EN" : "عربي"}
+          {lang === "ar" ? "English" : "عربي"}
         </button>
       </div>
 
-      <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-4 py-2 lg:hidden">
+      <nav className="flex gap-0 overflow-x-auto border-t border-[var(--border)] px-4 md:hidden">
         {navItems.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium ${
+              className={`whitespace-nowrap px-3 py-2 text-xs font-medium ${
                 active
-                  ? "bg-emerald-50 text-emerald-800"
-                  : "text-slate-600 hover:bg-slate-50"
+                  ? "border-b-2 border-[var(--gold)] text-[var(--navy)]"
+                  : "text-[var(--muted)]"
               }`}
             >
               {t(item.labelAr, item.labelEn)}
