@@ -71,36 +71,68 @@ body::before {
   outline-offset: 2px;
 }
 
-/* Hero geometric pattern — restrained, official */
+/* Hero — clean executive surface, no clip on children */
 .hero-surface {
   position: relative;
-  background: linear-gradient(165deg, var(--color-navy-deep) 0%, var(--color-navy) 45%, #0f3058 100%);
-  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(168deg, var(--color-navy-deep) 0%, var(--color-navy) 52%, #0e2d4d 100%);
 }
 
-.hero-surface::before {
-  content: "";
+.hero-surface__bg {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-}
-
-.hero-surface::after {
-  content: "";
-  position: absolute;
-  top: -20%;
-  inset-inline-end: -10%;
-  width: 55%;
-  height: 140%;
-  background: radial-gradient(ellipse at center, rgba(0, 108, 53, 0.12) 0%, transparent 65%);
+  z-index: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
+.hero-surface__bg::before {
+  content: "";
+  position: absolute;
+  inset-inline-end: -5%;
+  top: -30%;
+  width: 50%;
+  height: 120%;
+  background: radial-gradient(ellipse at center, rgba(0, 108, 53, 0.14) 0%, transparent 68%);
+}
+
+.hero-surface__bg::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: -8%;
+  bottom: -40%;
+  width: 45%;
+  height: 80%;
+  background: radial-gradient(ellipse at center, rgba(154, 123, 47, 0.08) 0%, transparent 70%);
+}
+
+.hero-surface__content {
+  position: relative;
+  z-index: 1;
+}
+
 .hero-accent-bar {
+  position: relative;
+  z-index: 1;
   height: 3px;
-  background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) 66%, var(--color-gold) 66%, var(--color-gold) 100%);
+  background: linear-gradient(
+    to right,
+    var(--color-primary) 0%,
+    var(--color-primary) 66%,
+    var(--color-gold) 66%,
+    var(--color-gold) 100%
+  );
+}
+
+.hero-stats {
+  position: relative;
+  z-index: 20;
+  margin-top: -3.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .hero-stats {
+    margin-top: -4.5rem;
+  }
 }

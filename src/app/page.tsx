@@ -99,7 +99,8 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <section className="hero-surface">
-        <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 md:pb-20 md:pt-16">
+        <div className="hero-surface__bg" aria-hidden />
+        <div className="hero-surface__content mx-auto max-w-7xl px-4 pb-28 pt-12 md:pb-32 md:pt-16">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
               <span className="size-1.5 rounded-full bg-primary" aria-hidden />
@@ -129,31 +130,31 @@ export default function HomePage() {
           </div>
         </div>
         <div className="hero-accent-bar" aria-hidden />
-
-        {/* Floating stats — overlaps hero/content */}
-        <div className="relative mx-auto max-w-7xl px-4">
-          <div className="-mb-12 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-lg border border-border/80 bg-surface px-4 py-4 shadow-md md:px-5 md:py-5"
-              >
-                <p className="text-[11px] font-medium uppercase tracking-wide text-muted">{s.label}</p>
-                <p
-                  className={`mt-1 text-2xl font-bold tabular-nums tracking-tight md:text-3xl ${
-                    s.highlight ? "text-primary" : "text-navy"
-                  }`}
-                >
-                  {s.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
+      {/* Stats — outside hero so nothing clips or covers them */}
+      <div className="hero-stats mx-auto max-w-7xl px-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="min-h-[88px] rounded-lg border border-border bg-surface px-4 py-4 shadow-md md:min-h-[96px] md:px-5 md:py-5"
+            >
+              <p className="text-[11px] font-medium leading-snug text-muted">{s.label}</p>
+              <p
+                className={`mt-2 text-2xl font-bold leading-none tabular-nums tracking-tight md:text-3xl ${
+                  s.highlight ? "text-primary" : "text-navy"
+                }`}
+              >
+                {s.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <PageShell>
-        <div className="pt-8">
+        <div>
           {/* Initiative map */}
           <section className="mb-12">
             <div className="mb-6 flex flex-col gap-1">
