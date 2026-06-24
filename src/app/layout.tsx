@@ -27,7 +27,7 @@ export default function RootLayout({
         <AppProvider>
           <Header />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-[var(--border)] bg-[var(--navy)] py-5 text-center text-xs text-white/60">
+          <footer className="border-t border-border bg-navy py-5 text-center text-xs text-white/60">
             © {new Date().getFullYear()} وزارة الصناعة والثروة المعدنية — مركز القدرات الصناعية
             <span className="mx-2">·</span>
             نموذج أولي — مرحلة التخطيط

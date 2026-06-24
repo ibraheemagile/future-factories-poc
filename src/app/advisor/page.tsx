@@ -6,7 +6,7 @@ import { useApp } from "@/lib/context";
 import { assessmentQuestions } from "@/lib/mock-data";
 import { analyzeAssessment } from "@/lib/ai-engine";
 import type { AssessmentAnswer, InitiativePath } from "@/lib/types";
-import { Panel, ProgressLine, SectionTitle, StepBar, Tag } from "@/components/ui";
+import { Panel, ProgressLine, SectionTitle, Tag } from "@/components/ui";
 
 const pathLabels: Record<InitiativePath, { ar: string; en: string }> = {
   transformation: { ar: "مسار التحول الصناعي — مصانع المستقبل", en: "Industrial Transformation — Future Factories" },
@@ -23,10 +23,11 @@ const pathLinks: Record<string, string> = {
 };
 
 export default function AdvisorPage() {
-  const { t, lang } = useApp();
+  const { t } = useApp();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<AssessmentAnswer[]>([]);
   const [showResult, setShowResult] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   const currentQ = assessmentQuestions[step];
   const progress = Math.round(((step + (showResult ? 1 : 0)) / assessmentQuestions.length) * 100);
@@ -45,12 +46,10 @@ export default function AdvisorPage() {
     }
   };
 
-  const stepLabels = assessmentQuestions.map((q) =>
-    t(q.questionAr.slice(0, 12) + "…", q.questionEn.slice(0, 12) + "…")
-  );
+  const stepLabels = assessmentQuestions.map((q) => t(q.shortAr, q.shortEn));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <SectionTitle
         title={t("تحديد المسار — استبيان أولي", "Path Assessment — Initial Survey")}
         subtitle={t(
@@ -59,38 +58,88 @@ export default function AdvisorPage() {
         )}
       />
 
-      <Panel className="mb-6">
-        <StepBar steps={stepLabels.slice(0, 4)} current={Math.min(step, 3)} />
-        <div className="mt-4">
-          <ProgressLine value={progress} label={t("اكتمال الاستبيان", "Survey Completion")} />
+      {/* Progress header */}
+      <div className="mb-6 border border-border bg-white p-5">
+        <div className="mb-4 flex items-center justify-between text-sm">
+          <span className="font-medium text-navy">
+            {showResult
+              ? t("اكتمل الاستبيان", "Survey Complete")
+              : t(`الخطوة ${step + 1} من ${assessmentQuestions.length}`, `Step ${step + 1} of ${assessmentQuestions.length}`)}
+          </span>
+          <span className="tabular-nums text-muted">{progress}%</span>
         </div>
-      </Panel>
+        <ProgressLine value={progress} />
+        {!showResult && (
+          <p className="mt-3 text-xs text-muted">
+            {t("الخطوة الحالية:", "Current step:")}{" "}
+            <span className="font-medium text-foreground">{stepLabels[step]}</span>
+          </p>
+        )}
+        {/* Mini step dots */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {stepLabels.map((label, i) => {
+            const done = i < step || showResult;
+            const active = i === step && !showResult;
+            return (
+              <span
+                key={label}
+                className={`px-2 py-1 text-xs font-medium transition-colors duration-200 ${
+                  done
+                    ? "bg-navy text-white"
+                    : active
+                      ? "border-2 border-navy bg-white text-navy"
+                      : "border border-border bg-white text-muted"
+                }`}
+              >
+                {label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
 
       {!showResult ? (
         <Panel className="animate-fade-in">
-          <p className="text-xs font-medium text-[var(--muted)]">
-            {t(`السؤال ${step + 1} من ${assessmentQuestions.length}`, `Question ${step + 1} of ${assessmentQuestions.length}`)}
-          </p>
-          <h3 className="mt-2 text-lg font-semibold text-[var(--navy)]">
+          <h3 className="text-base font-semibold text-navy">
             {t(currentQ.questionAr, currentQ.questionEn)}
           </h3>
-          <div className="mt-5 space-y-2">
-            {currentQ.options.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleAnswer(opt.value)}
-                className="block w-full border border-[var(--border)] px-4 py-3 text-start text-sm transition hover:border-[var(--navy)] hover:bg-[#fafbfc]"
-              >
-                {t(opt.labelAr, opt.labelEn)}
-              </button>
-            ))}
-          </div>
+          <fieldset className="mt-5 space-y-3">
+            <legend className="sr-only">{t(currentQ.questionAr, currentQ.questionEn)}</legend>
+            {currentQ.options.map((opt) => {
+              const label = t(opt.labelAr, opt.labelEn);
+              const isHovered = hovered === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleAnswer(opt.value)}
+                  onMouseEnter={() => setHovered(opt.value)}
+                  onMouseLeave={() => setHovered(null)}
+                  className={`flex w-full cursor-pointer items-center gap-3 border px-4 py-3.5 text-start transition-colors duration-200 ${
+                    isHovered
+                      ? "border-navy bg-slate-50"
+                      : "border-border bg-white hover:border-navy hover:bg-slate-50"
+                  }`}
+                >
+                  <span
+                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                      isHovered ? "border-navy" : "border-slate-300"
+                    }`}
+                  >
+                    {isHovered && <span className="h-2 w-2 rounded-full bg-navy" />}
+                  </span>
+                  <span className="text-sm font-medium text-slate-900">{label}</span>
+                </button>
+              );
+            })}
+          </fieldset>
           {step > 0 && (
             <button
+              type="button"
               onClick={() => setStep(step - 1)}
-              className="mt-4 text-sm text-[var(--muted)] hover:text-[var(--navy)]"
+              className="mt-5 cursor-pointer text-sm font-medium text-muted transition-colors duration-200 hover:text-navy"
             >
-              {t("السابق", "Previous")}
+              {t("← السابق", "← Previous")}
             </button>
           )}
         </Panel>
@@ -100,14 +149,16 @@ export default function AdvisorPage() {
             <Panel title={t("نتيجة التقييم", "Assessment Result")}>
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs text-[var(--muted)]">{t("المسار المقترح", "Recommended Path")}</p>
-                  <p className="mt-1 text-lg font-semibold text-[var(--navy)]">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                    {t("المسار المقترح", "Recommended Path")}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold text-navy">
                     {t(pathLabels[recommendation.path].ar, pathLabels[recommendation.path].en)}
                   </p>
                 </div>
 
                 {recommendation.eligibleForGrant && (
-                  <div className="border-r-4 border-[var(--gold)] bg-[var(--gold-light)] px-4 py-3 text-sm">
+                  <div className="border-s-4 border-gold bg-gold-light px-4 py-3 text-sm text-slate-800">
                     {t(
                       `مؤهل لمنحة المصانع الابتكارية — TRL ${recommendation.trlLevel} — تمويل حتى 70% (حد أقصى 2,000,000 ريال)`,
                       `Eligible for Innovation Factory Grant — TRL ${recommendation.trlLevel} — up to 70% (max SAR 2,000,000)`
@@ -116,29 +167,23 @@ export default function AdvisorPage() {
                 )}
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase text-[var(--muted)]">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                     {t("مبررات التوجيه", "Routing Rationale")}
                   </p>
-                  <ul className="space-y-1.5 text-sm text-[var(--foreground)]">
+                  <ul className="space-y-1.5 text-sm text-slate-800">
                     {recommendation.reasons.map((r, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="text-[var(--muted)]">{i + 1}.</span>
-                        {t(r.ar, r.en)}
-                      </li>
+                      <li key={i}>{i + 1}. {t(r.ar, r.en)}</li>
                     ))}
                   </ul>
                 </div>
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase text-[var(--muted)]">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                     {t("الإجراءات المطلوبة", "Required Actions")}
                   </p>
-                  <ol className="space-y-1.5 text-sm">
+                  <ol className="list-decimal space-y-1.5 ps-5 text-sm text-slate-800">
                     {recommendation.nextSteps.map((s, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="font-medium text-[var(--navy)]">{i + 1}.</span>
-                        {t(s.ar, s.en)}
-                      </li>
+                      <li key={i}>{t(s.ar, s.en)}</li>
                     ))}
                   </ol>
                 </div>
@@ -147,14 +192,15 @@ export default function AdvisorPage() {
 
             <Link
               href={pathLinks[recommendation.path] || "/factory"}
-              className="block bg-[var(--navy)] px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[var(--navy-light)]"
+              className="block cursor-pointer bg-navy px-6 py-3.5 text-center text-sm font-semibold text-white transition-colors duration-200 hover:bg-navy-light"
             >
               {t("متابعة إلى الملف", "Continue to Profile")}
             </Link>
 
             <button
+              type="button"
               onClick={() => { setStep(0); setAnswers([]); setShowResult(false); }}
-              className="w-full py-2 text-center text-sm text-[var(--muted)] hover:text-[var(--navy)]"
+              className="w-full cursor-pointer py-2 text-center text-sm text-muted transition-colors duration-200 hover:text-navy"
             >
               {t("إعادة الاستبيان", "Retake Survey")}
             </button>

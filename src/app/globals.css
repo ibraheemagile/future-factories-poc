@@ -13,8 +13,14 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #f4f5f7;
+  --color-foreground: #1a2332;
+  --color-navy: #0c2340;
+  --color-navy-light: #163a5f;
+  --color-gold: #a88b4a;
+  --color-gold-light: #f5f0e6;
+  --color-muted: #5c6578;
+  --color-border: #dde1e8;
   --font-sans: var(--font-ibm-plex);
 }
 

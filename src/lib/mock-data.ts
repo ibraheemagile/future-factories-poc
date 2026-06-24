@@ -129,6 +129,8 @@ export const journeyStages = [
 export const assessmentQuestions = [
   {
     id: "user_type",
+    shortAr: "نوع المنشأة",
+    shortEn: "Entity",
     questionAr: "ما نوع منشأتك؟",
     questionEn: "What type of entity are you?",
     options: [
@@ -139,6 +141,8 @@ export const assessmentQuestions = [
   },
   {
     id: "sector",
+    shortAr: "القطاع",
+    shortEn: "Sector",
     questionAr: "ما القطاع الصناعي؟",
     questionEn: "What is your industrial sector?",
     options: [
@@ -150,6 +154,8 @@ export const assessmentQuestions = [
   },
   {
     id: "digital_maturity",
+    shortAr: "النضج الرقمي",
+    shortEn: "Maturity",
     questionAr: "ما مستوى النضج الرقمي الحالي؟",
     questionEn: "What is your current digital maturity level?",
     options: [
@@ -160,8 +166,10 @@ export const assessmentQuestions = [
   },
   {
     id: "has_prototype",
-    questionAr: "هل لديك نموذج أولي (Prototype)؟",
-    questionEn: "Do you have a working prototype?",
+    shortAr: "النموذج الأولي",
+    shortEn: "Prototype",
+    questionAr: "هل لديك نموذج أولي جاهز للاختبار؟",
+    questionEn: "Do you have a working prototype ready for testing?",
     options: [
       { value: "yes", labelAr: "نعم", labelEn: "Yes" },
       { value: "no", labelAr: "لا", labelEn: "No" },
@@ -169,6 +177,8 @@ export const assessmentQuestions = [
   },
   {
     id: "trl_level",
+    shortAr: "TRL",
+    shortEn: "TRL",
     questionAr: "ما مستوى الجاهزية التقنية (TRL)؟",
     questionEn: "What is your Technology Readiness Level (TRL)?",
     options: [
@@ -181,8 +191,10 @@ export const assessmentQuestions = [
   },
   {
     id: "primary_need",
-    questionAr: "ما احتياجك الأساسي؟",
-    questionEn: "What is your primary need?",
+    shortAr: "الاحتياج",
+    shortEn: "Need",
+    questionAr: "ما احتياجك الأساسي من برامج المركز؟",
+    questionEn: "What is your primary need from the center's programs?",
     options: [
       {
         value: "transformation",
