@@ -8,24 +8,31 @@ export function PageShell({
   title,
   subtitle,
   actions,
+  eyebrow,
 }: {
   children: ReactNode;
   title?: string;
   subtitle?: string;
   actions?: ReactNode;
+  eyebrow?: string;
 }) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 md:py-10">
       {(title || actions) && (
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-8 flex flex-col gap-4 border-b border-border-subtle pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
+            {eyebrow && (
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold">
+                {eyebrow}
+              </p>
+            )}
             {title && (
-              <h1 className="text-2xl font-semibold tracking-tight text-navy md:text-[28px]">
+              <h1 className="text-2xl font-bold tracking-tight text-navy md:text-[2rem]">
                 {title}
               </h1>
             )}
             {subtitle && (
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-secondary">
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
                 {subtitle}
               </p>
             )}

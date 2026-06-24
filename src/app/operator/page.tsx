@@ -71,6 +71,7 @@ export default function OperatorPage() {
 
   return (
     <PageShell
+      eyebrow={t("التشغيل", "Operations")}
       title={t("لوحة متابعة التشغيل", "Operations Control Room")}
       subtitle={t(
         "مراجعة الطلبات التي تتطلب إجراء — باقي الطلبات تُعالج تلقائياً",

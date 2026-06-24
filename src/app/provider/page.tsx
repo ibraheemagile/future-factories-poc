@@ -73,6 +73,7 @@ export default function ProviderPage() {
 
   return (
     <PageShell
+      eyebrow={t("سوق مقدمي الخدمات", "Provider Marketplace")}
       title={t("طلب اعتماد مقدم خدمة", "Service Provider Approval Request")}
       subtitle={t(
         "متطلبات برنامج مصانع المستقبل — مسار الرقمنة الأساسية",

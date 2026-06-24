@@ -40,6 +40,7 @@ export default function FactoryPage() {
 
   return (
     <PageShell
+      eyebrow={t("مصانع المستقبل", "Future Factories")}
       title={t("ملف المصنع", "Factory Profile")}
       subtitle={`${factoryDetails.applicationRef} — ${factoryDetails.program}`}
       actions={

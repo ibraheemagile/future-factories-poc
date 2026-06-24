@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/context";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const ibmPlex = IBM_Plex_Sans_Arabic({
   variable: "--font-ibm-plex",
@@ -23,15 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" className={`${ibmPlex.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <AppProvider>
           <Header />
           <main className="flex-1">{children}</main>
-          <footer className="border-t border-border bg-navy py-5 text-center text-xs text-white/60">
-            © {new Date().getFullYear()} وزارة الصناعة والثروة المعدنية — مركز القدرات الصناعية
-            <span className="mx-2">·</span>
-            نموذج أولي — مرحلة التخطيط
-          </footer>
+          <Footer />
         </AppProvider>
       </body>
     </html>

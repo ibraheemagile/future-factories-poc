@@ -72,6 +72,7 @@ export default function AdvisorPage() {
 
   return (
     <PageShell
+      eyebrow={t("الاستبيان", "Survey")}
       title={t("تحديد المسار — استبيان أولي", "Path Assessment — Initial Survey")}
       subtitle={t(
         "نموذج FF-INT-001 — يُستخدم لتحديد البرنامج والمسار المناسب",
