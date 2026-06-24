@@ -67,11 +67,22 @@ export const initiatives: Initiative[] = [
     titleAr: "سوق مقدمي الخدمات",
     titleEn: "Service Provider Marketplace",
     descriptionAr:
-      "تسجيل الموردين، التحقق الآلي، ومطابقة الحلول مع المصانع",
+      "تسجيل الموردين، التحقق الإلكتروني، ومطابقة الحلول مع المصانع",
     descriptionEn:
-      "Provider registration, automated verification, and solution matching",
+      "Provider registration, electronic verification, and solution matching",
     programs: ["ERP/SCM/CRM", "أتمتة OT", "تكامل IT-OT"],
     icon: "store",
+  },
+  {
+    id: "operations",
+    titleAr: "التشغيل والمتابعة",
+    titleEn: "Operations & Monitoring",
+    descriptionAr:
+      "لوحة المتابعة، الاستثناءات، مراجعات المنح، وتقديم المراحل",
+    descriptionEn:
+      "Monitoring dashboard, exceptions, grant reviews, and milestone tracking",
+    programs: ["قائمة الإجراءات", "الاستثناءات", "المنح"],
+    icon: "dashboard",
   },
 ];
 
@@ -239,7 +250,7 @@ export const serviceProviders: ServiceProvider[] = [
   {
     id: "sp-2",
     name: "Schneider Electric Saudi Arabia",
-    nameAr: "シュناider إلكتريك السعودية",
+    nameAr: "Schneider Electric السعودية",
     solutions: ["MES", "SCADA", "IIoT", "IT-OT Integration"],
     modules: ["SCADA", "MES", "IIoT Gateway"],
     otIntegration: true,
@@ -290,6 +301,71 @@ export const factoryDetails = {
   program: "مصانع المستقبل — مسار الرقمنة الأساسية",
 };
 
+export const factoryMilestones = [
+  {
+    id: "ms-1",
+    titleAr: "تفعيل ERP — المالية والمشتريات",
+    titleEn: "ERP Go-Live — Finance & Procurement",
+    dueDate: "2025-03-15",
+    status: "completed" as const,
+    deliverables: [
+      { ar: "تقرير التفعيل المعتمد", en: "Signed go-live report" },
+      { ar: "3 فواتير مرجعية مُدخلة", en: "3 reference invoices entered" },
+    ],
+  },
+  {
+    id: "ms-2",
+    titleAr: "تركيب SCM — المخزون والتوزيع",
+    titleEn: "SCM Installation — Inventory & Distribution",
+    dueDate: "2025-05-30",
+    status: "in_progress" as const,
+    deliverables: [
+      { ar: "خطة التركيب المعتمدة", en: "Approved installation plan" },
+      { ar: "ربط أولي مع OT", en: "Initial OT integration" },
+    ],
+  },
+  {
+    id: "ms-3",
+    titleAr: "تكامل IT-OT — خط الإنتاج",
+    titleEn: "IT-OT Integration — Production Line",
+    dueDate: "2025-08-15",
+    status: "pending" as const,
+    deliverables: [
+      { ar: "تقرير البيانات التشغيلية", en: "Operational data report" },
+      { ar: "لوحة مؤشرات الإنتاج", en: "Production KPI dashboard" },
+    ],
+  },
+];
+
+export const factoryQuotations = [
+  {
+    id: "qt-1",
+    providerId: "sp-1",
+    amount: 1850000,
+    currency: "SAR",
+    scope: {
+      ar: "ERP + SCM + CRM — تركيب، تخصيص، وتدريب",
+      en: "ERP + SCM + CRM — installation, customization, and training",
+    },
+    timelineMonths: 14,
+    status: "submitted" as const,
+    submittedAt: "2025-02-18",
+  },
+  {
+    id: "qt-2",
+    providerId: "sp-2",
+    amount: 920000,
+    currency: "SAR",
+    scope: {
+      ar: "SCADA + MES + تكامل IT-OT لخط الإنتاج",
+      en: "SCADA + MES + IT-OT integration for production line",
+    },
+    timelineMonths: 8,
+    status: "submitted" as const,
+    submittedAt: "2025-02-20",
+  },
+];
+
 export const operatorCases: OperatorCase[] = [
   {
     id: "op-1",
@@ -299,9 +375,17 @@ export const operatorCases: OperatorCase[] = [
     entity: "SP-2025-0194",
     priority: "high",
     status: "pending",
-    aiSummary: {
+    systemSummary: {
       ar: "فاتورتان من 3 — ناقصة فاتورة واحدة. مصانع مرجعية: 2/3. مطلوب متابعة قبل الاعتماد.",
       en: "2 of 3 invoices — 1 missing. Factory references: 2/3. Follow-up required before approval.",
+    },
+    recommendedAction: {
+      ar: "طلب الفاتورة الناقصة والمصنع المرجعي الثالث",
+      en: "Request missing invoice and third factory reference",
+    },
+    riskReason: {
+      ar: "عدم استيفاء متطلبات البريد الرسمي لمصانع المستقبل",
+      en: "Future Factories official requirements not fully met",
     },
   },
   {
@@ -312,9 +396,13 @@ export const operatorCases: OperatorCase[] = [
     entity: "IG-2025-0312",
     priority: "medium",
     status: "in_review",
-    aiSummary: {
+    systemSummary: {
       ar: "مؤهل ضمن TRL 4–7. التمويل المقترح: 70% بحد أقصى 1,400,000 ريال. بانتظار ربط هيئة الابتكار.",
       en: "Eligible TRL 4–7. Suggested funding: 70% up to SAR 1,400,000. Pending Innovation Authority link.",
+    },
+    recommendedAction: {
+      ar: "إرسال الطلب لهيئة الابتكار للموافقة النهائية",
+      en: "Forward to Innovation Authority for final approval",
     },
   },
   {
@@ -325,9 +413,13 @@ export const operatorCases: OperatorCase[] = [
     entity: "FF-2025-0618",
     priority: "low",
     status: "pending",
-    aiSummary: {
+    systemSummary: {
       ar: "المرحلة 2/4 — ERP مُفعّل، SCM قيد التركيب. التقرير الأسبوعي مستحق يوم الأحد.",
       en: "Milestone 2/4 — ERP live, SCM in progress. Weekly report due Sunday.",
+    },
+    recommendedAction: {
+      ar: "مراجعة تقرير التقدم الأسبوعي",
+      en: "Review weekly progress report",
     },
   },
   {
@@ -338,9 +430,17 @@ export const operatorCases: OperatorCase[] = [
     entity: "SP-2025-0201",
     priority: "high",
     status: "pending",
-    aiSummary: {
+    systemSummary: {
       ar: "رقم السجل 4030891234 لا يطابق سجل وزارة التجارة. يتطلب مراجعة يدوية.",
       en: "CR 4030891234 does not match Ministry of Commerce records. Manual review required.",
+    },
+    recommendedAction: {
+      ar: "التحقق اليدوي من السجل التجاري",
+      en: "Manual CR verification",
+    },
+    riskReason: {
+      ar: "احتمال تقديم بيانات غير صحيحة",
+      en: "Potential submission of incorrect data",
     },
   },
 ];

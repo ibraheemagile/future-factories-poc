@@ -17,7 +17,7 @@ export type JourneyStage =
   | "lighthouse";
 
 export interface Initiative {
-  id: InitiativePath;
+  id: string;
   titleAr: string;
   titleEn: string;
   descriptionAr: string;
@@ -76,7 +76,29 @@ export interface OperatorCase {
   entity: string;
   priority: "high" | "medium" | "low";
   status: "pending" | "in_review" | "resolved";
-  aiSummary: { ar: string; en: string };
+  systemSummary: { ar: string; en: string };
+  recommendedAction?: { ar: string; en: string };
+  riskReason?: { ar: string; en: string };
+}
+
+export interface Quotation {
+  id: string;
+  providerId: string;
+  amount: number;
+  currency: string;
+  scope: { ar: string; en: string };
+  timelineMonths: number;
+  status: "draft" | "submitted" | "accepted";
+  submittedAt?: string;
+}
+
+export interface Milestone {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  dueDate: string;
+  status: "completed" | "in_progress" | "pending";
+  deliverables: { ar: string; en: string }[];
 }
 
 export interface TrainingProgram {

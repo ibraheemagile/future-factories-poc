@@ -2,7 +2,16 @@
 
 import { useApp } from "@/lib/context";
 import { operatorCases } from "@/lib/mock-data";
-import { Panel, Tag, Stat, SectionTitle, DataTable } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  DataTable,
+  MetricCard,
+  PageShell,
+  StatusBadge,
+} from "@/components/ui";
 
 const typeLabels = {
   exception: { ar: "استثناء", en: "Exception" },
@@ -12,8 +21,8 @@ const typeLabels = {
 };
 
 const priorityTone = {
-  high: "red" as const,
-  medium: "amber" as const,
+  high: "danger" as const,
+  medium: "warning" as const,
   low: "neutral" as const,
 };
 
@@ -29,72 +38,121 @@ export default function OperatorPage() {
   const stats = {
     pending: operatorCases.filter((c) => c.status === "pending").length,
     inReview: operatorCases.filter((c) => c.status === "in_review").length,
-    high: operatorCases.filter((c) => c.priority === "high").length,
+    grants: operatorCases.filter((c) => c.type === "grant_review").length,
+    milestones: operatorCases.filter((c) => c.type === "milestone").length,
     exceptions: operatorCases.filter((c) => c.type === "exception").length,
   };
 
   const rows = operatorCases.map((c) => [
-    c.entity,
-    t(typeLabels[c.type].ar, typeLabels[c.type].en),
-    <span key={`t-${c.id}`} className="font-medium">{t(c.titleAr, c.titleEn)}</span>,
-    <Tag key={`p-${c.id}`} tone={priorityTone[c.priority]}>
-      {c.priority === "high" ? t("عاجل", "Urgent") : c.priority === "medium" ? t("متوسط", "Medium") : t("منخفض", "Low")}
-    </Tag>,
-    <Tag key={`s-${c.id}`} tone={c.status === "pending" ? "amber" : c.status === "in_review" ? "blue" : "green"}>
+    <span key={`e-${c.id}`} className="font-mono text-xs">{c.entity}</span>,
+    <StatusBadge key={`t-${c.id}`} tone={c.type === "exception" ? "danger" : "neutral"}>
+      {t(typeLabels[c.type].ar, typeLabels[c.type].en)}
+    </StatusBadge>,
+    <span key={`d-${c.id}`} className="font-medium text-navy">
+      {t(c.titleAr, c.titleEn)}
+    </span>,
+    <StatusBadge key={`p-${c.id}`} tone={priorityTone[c.priority]}>
+      {c.priority === "high"
+        ? t("عاجل", "Urgent")
+        : c.priority === "medium"
+          ? t("متوسط", "Medium")
+          : t("منخفض", "Low")}
+    </StatusBadge>,
+    <StatusBadge
+      key={`s-${c.id}`}
+      tone={c.status === "pending" ? "warning" : c.status === "in_review" ? "info" : "success"}
+    >
       {t(statusLabels[c.status].ar, statusLabels[c.status].en)}
-    </Tag>,
-    <button key={`a-${c.id}`} className="text-xs font-medium text-[var(--navy)] underline">
+    </StatusBadge>,
+    <Button key={`a-${c.id}`} variant="ghost" className="min-h-8 px-2 py-1 text-xs">
       {t("مراجعة", "Review")}
-    </button>,
+    </Button>,
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <SectionTitle
-        title={t("لوحة متابعة التشغيل", "Operations Monitoring")}
-        subtitle={t(
-          "مراجعة الطلبات التي تتطلب إجراء — باقي الطلبات تُعالج تلقائياً",
-          "Applications requiring action — remaining requests processed automatically"
-        )}
-      />
-
-      <div className="mb-6 grid grid-cols-2 gap-px bg-[var(--border)] md:grid-cols-4">
-        <Stat label={t("معلق", "Pending")} value={stats.pending} />
-        <Stat label={t("قيد المراجعة", "In Review")} value={stats.inReview} />
-        <Stat label={t("عاجل", "Urgent")} value={stats.high} />
-        <Stat label={t("استثناءات", "Exceptions")} value={stats.exceptions} />
+    <PageShell
+      title={t("لوحة متابعة التشغيل", "Operations Control Room")}
+      subtitle={t(
+        "مراجعة الطلبات التي تتطلب إجراء — باقي الطلبات تُعالج تلقائياً",
+        "Applications requiring action — remaining requests processed automatically"
+      )}
+    >
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <MetricCard label={t("معلق", "Pending")} value={stats.pending} />
+        <MetricCard label={t("قيد المراجعة", "In Review")} value={stats.inReview} />
+        <MetricCard label={t("منح", "Grants")} value={stats.grants} />
+        <MetricCard label={t("مراحل", "Milestones")} value={stats.milestones} />
+        <MetricCard label={t("استثناءات", "Exceptions")} value={stats.exceptions} />
       </div>
 
-      <Panel title={t("قائمة المتابعة", "Action Queue")}>
-        <DataTable
-          headers={[
-            t("رقم الطلب", "Ref"),
-            t("النوع", "Type"),
-            t("الوصف", "Description"),
-            t("الأولوية", "Priority"),
-            t("الحالة", "Status"),
-            "",
-          ]}
-          rows={rows}
-        />
-      </Panel>
+      <Card className="mb-8">
+        <CardHeader title={t("قائمة الإجراءات", "Action Queue")} />
+        <CardBody className="p-0">
+          <DataTable
+            headers={[
+              t("رقم الطلب", "Ref"),
+              t("النوع", "Type"),
+              t("الوصف", "Description"),
+              t("الأولوية", "Priority"),
+              t("الحالة", "Status"),
+              "",
+            ]}
+            rows={rows}
+          />
+        </CardBody>
+      </Card>
 
-      <div className="mt-6 space-y-3">
-        {operatorCases.map((c) => (
-          <Panel key={c.id} className="!p-0">
-            <div className="px-5 py-3">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
-                <span>{c.entity}</span>
-                <span>·</span>
-                <span>{t(typeLabels[c.type].ar, typeLabels[c.type].en)}</span>
-              </div>
-              <p className="mt-1 text-sm text-[var(--foreground)]">
-                {t(c.aiSummary.ar, c.aiSummary.en)}
-              </p>
-            </div>
-          </Panel>
-        ))}
-      </div>
-    </div>
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-navy">
+          {t("بطاقات الحالات", "Case Cards")}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          {operatorCases.map((c) => (
+            <Card key={c.id}>
+              <CardBody>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-xs text-muted">{c.entity}</span>
+                  <StatusBadge tone={priorityTone[c.priority]}>
+                    {c.priority === "high" ? t("عاجل", "Urgent") : c.priority}
+                  </StatusBadge>
+                  <StatusBadge tone={c.type === "exception" ? "danger" : "info"}>
+                    {t(typeLabels[c.type].ar, typeLabels[c.type].en)}
+                  </StatusBadge>
+                </div>
+                <p className="mt-2 text-sm font-semibold text-navy">
+                  {t(c.titleAr, c.titleEn)}
+                </p>
+                <p className="mt-2 text-sm text-secondary">
+                  {t(c.systemSummary.ar, c.systemSummary.en)}
+                </p>
+                {c.recommendedAction && (
+                  <div className="mt-4 rounded-md bg-info-bg px-3 py-2">
+                    <p className="text-xs font-medium text-info">
+                      {t("الإجراء المقترح", "Recommended Action")}
+                    </p>
+                    <p className="mt-0.5 text-sm text-secondary">
+                      {t(c.recommendedAction.ar, c.recommendedAction.en)}
+                    </p>
+                  </div>
+                )}
+                {c.riskReason && (
+                  <div className="mt-2 rounded-md bg-warning-bg px-3 py-2">
+                    <p className="text-xs font-medium text-warning">
+                      {t("سبب المخاطرة", "Risk Reason")}
+                    </p>
+                    <p className="mt-0.5 text-sm text-secondary">
+                      {t(c.riskReason.ar, c.riskReason.en)}
+                    </p>
+                  </div>
+                )}
+                <Button variant="outline" className="mt-4">
+                  {t("فتح الحالة", "Open Case")}
+                </Button>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </PageShell>
   );
 }

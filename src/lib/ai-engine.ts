@@ -104,8 +104,8 @@ export function analyzeAssessment(
 export function matchProviders(
   sector: string,
   needs: string[]
-): { providerId: string; score: number; reasons: string[] }[] {
-  const scores: Record<string, { score: number; reasons: string[] }> = {
+): { providerId: string; score: number; reasons: { ar: string; en: string }[] }[] {
+  const scores: Record<string, { score: number; reasons: { ar: string; en: string }[] }> = {
     "sp-1": { score: 0, reasons: [] },
     "sp-2": { score: 0, reasons: [] },
     "sp-3": { score: 0, reasons: [] },
@@ -113,22 +113,40 @@ export function matchProviders(
 
   if (needs.includes("transformation") || needs.includes("erp")) {
     scores["sp-1"].score += 40;
-    scores["sp-1"].reasons.push("Full ERP/SCM/CRM/APS/WMS/PLM coverage");
+    scores["sp-1"].reasons.push({
+      ar: "تغطية كاملة ERP/SCM/CRM/APS/WMS/PLM",
+      en: "Full ERP/SCM/CRM/APS/WMS/PLM coverage",
+    });
     scores["sp-3"].score += 25;
-    scores["sp-3"].reasons.push("ERP + WMS modules available");
+    scores["sp-3"].reasons.push({
+      ar: "وحدات ERP + WMS متاحة",
+      en: "ERP + WMS modules available",
+    });
   }
 
   if (needs.includes("ot") || sector === "metals" || sector === "plastics") {
     scores["sp-2"].score += 45;
-    scores["sp-2"].reasons.push("OT automation & shopfloor data expertise");
+    scores["sp-2"].reasons.push({
+      ar: "خبرة أتمتة OT وبيانات خط الإنتاج",
+      en: "OT automation & shopfloor data expertise",
+    });
     scores["sp-1"].score += 20;
-    scores["sp-1"].reasons.push("OT integration capability");
+    scores["sp-1"].reasons.push({
+      ar: "قابلية التكامل مع أنظمة OT",
+      en: "OT integration capability",
+    });
   }
 
   scores["sp-1"].score += 15;
-  scores["sp-1"].reasons.push("Highest readiness score (94%)");
+  scores["sp-1"].reasons.push({
+    ar: "أعلى درجة جاهزية (96%)",
+    en: "Highest readiness score (96%)",
+  });
   scores["sp-2"].score += 10;
-  scores["sp-2"].reasons.push("Strong ROI (35% IRR)");
+  scores["sp-2"].reasons.push({
+    ar: "عائد استثمار قوي (31% IRR)",
+    en: "Strong ROI (31% IRR)",
+  });
 
   return Object.entries(scores)
     .map(([providerId, { score, reasons }]) => ({ providerId, score, reasons }))

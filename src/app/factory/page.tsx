@@ -5,191 +5,292 @@ import { useApp } from "@/lib/context";
 import {
   demoFactory,
   factoryDetails,
+  factoryMilestones,
+  factoryQuotations,
   journeyStages,
   serviceProviders,
   trainingPrograms,
 } from "@/lib/mock-data";
 import { matchProviders } from "@/lib/ai-engine";
-import { Panel, Tag, ProgressLine, SectionTitle, DataTable } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  MetricCard,
+  PageShell,
+  ProgressLine,
+  StatusBadge,
+  Timeline,
+} from "@/components/ui";
 
 export default function FactoryPage() {
   const { t } = useApp();
   const matches = matchProviders("plastics", ["transformation", "erp", "ot"]);
-  const currentStageIndex = journeyStages.findIndex(
-    (s) => s.id === demoFactory.currentStage
-  );
+  const currentStageIndex = journeyStages.findIndex((s) => s.id === demoFactory.currentStage);
 
-  const providerRows = matches.map((match) => {
-    const p = serviceProviders.find((sp) => sp.id === match.providerId);
-    if (!p) return [];
-    return [
-      t(p.nameAr, p.name),
-      p.solutions.slice(0, 3).join(", "),
-      `${p.avgROI}%`,
-      `${p.paybackMonths} ${t("شهر", "mo")}`,
-      <Tag key={p.id} tone="green">{t("معتمد", "Approved")}</Tag>,
-      <button key={`btn-${p.id}`} className="text-xs font-medium text-[var(--navy)] underline">
-        {t("طلب عرض", "Request Quote")}
-      </button>,
-    ];
-  });
+  const timelineSteps = journeyStages.map((stage) => ({
+    id: stage.id,
+    title: t(stage.titleAr, stage.titleEn),
+    date: stage.order <= currentStageIndex + 1 ? `2025-0${Math.min(stage.order, 6)}` : undefined,
+  }));
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("ar-SA", { style: "currency", currency: "SAR", maximumFractionDigits: 0 }).format(amount);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <SectionTitle
-        title={t("ملف المصنع", "Factory Profile")}
-        subtitle={`${factoryDetails.applicationRef} — ${t(factoryDetails.program, factoryDetails.program)}`}
-      />
-
-      {/* Factory header */}
-      <div className="mb-6 grid gap-px bg-[var(--border)] md:grid-cols-4">
-        <div className="bg-white px-5 py-4 md:col-span-2">
-          <p className="text-xs text-[var(--muted)]">{t("اسم المنشأة", "Entity Name")}</p>
-          <p className="mt-1 font-semibold text-[var(--navy)]">
-            {t(demoFactory.nameAr, demoFactory.name)}
-          </p>
-          <p className="mt-1 text-xs text-[var(--muted)]">
-            {t("س.ت", "CR")}: {factoryDetails.crNumber} · {factoryDetails.city}
-          </p>
-        </div>
-        <div className="bg-white px-5 py-4">
-          <p className="text-xs text-[var(--muted)]">{t("مؤشر سيري", "SERI Index")}</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-[var(--navy)]">
-            {factoryDetails.seriLevel}
-          </p>
-          <p className="text-xs text-[var(--muted)]">{factoryDetails.monshaatSize}</p>
-        </div>
-        <div className="bg-white px-5 py-4">
-          <p className="text-xs text-[var(--muted)]">{t("جاهزية التحول", "Readiness")}</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-[var(--navy)]">
-            {demoFactory.readinessScore}%
-          </p>
-        </div>
+    <PageShell
+      title={t("ملف المصنع", "Factory Profile")}
+      subtitle={`${factoryDetails.applicationRef} — ${factoryDetails.program}`}
+      actions={
+        <Link href="/advisor">
+          <Button variant="outline">{t("تحديث التقييم", "Update Assessment")}</Button>
+        </Link>
+      }
+    >
+      {/* Factory header metrics */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="sm:col-span-2">
+          <CardBody>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              {t("اسم المنشأة", "Entity Name")}
+            </p>
+            <p className="mt-1 text-lg font-semibold text-navy">
+              {t(demoFactory.nameAr, demoFactory.name)}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {t("س.ت", "CR")}: {factoryDetails.crNumber} · {factoryDetails.city}
+            </p>
+          </CardBody>
+        </Card>
+        <MetricCard
+          label={t("مؤشر سيري", "SERI Index")}
+          value={factoryDetails.seriLevel}
+          sub={factoryDetails.monshaatSize}
+        />
+        <MetricCard
+          label={t("جاهزية التحول", "Readiness")}
+          value={`${demoFactory.readinessScore}%`}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          {/* Journey timeline - horizontal on desktop */}
-          <Panel title={t("مسار الطلب", "Application Track")}>
-            <div className="overflow-x-auto pb-2">
-              <div className="flex min-w-max gap-0">
-                {journeyStages.map((stage, i) => {
-                  const done = i < currentStageIndex;
-                  const current = i === currentStageIndex;
-                  return (
-                    <div key={stage.id} className="flex items-start">
-                      <div className="flex w-28 flex-col items-center px-1">
-                        <div
-                          className={`flex h-8 w-8 items-center justify-center text-xs font-bold ${
-                            done
-                              ? "bg-[var(--navy)] text-white"
-                              : current
-                                ? "border-2 border-[var(--navy)] text-[var(--navy)]"
-                                : "border border-[var(--border)] text-[var(--muted)]"
-                          }`}
-                        >
-                          {done ? "✓" : i + 1}
-                        </div>
-                        <p
-                          className={`mt-2 text-center text-[10px] leading-tight ${
-                            current ? "font-semibold text-[var(--navy)]" : "text-[var(--muted)]"
-                          }`}
-                        >
-                          {t(stage.titleAr, stage.titleEn)}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          {/* Journey timeline */}
+          <Card>
+            <CardHeader
+              title={t("مسار الطلب", "Application Track")}
+              subtitle={t("المرحلة الحالية: مطابقة مقدمي الخدمات", "Current stage: Provider Matching")}
+            />
+            <CardBody>
+              <Timeline
+                steps={timelineSteps.slice(0, 5)}
+                currentIndex={currentStageIndex}
+                currentLabel={t("المرحلة الحالية", "Current Stage")}
+              />
+              <div className="mt-6 border-t border-border-subtle pt-6">
+                <ProgressLine
+                  value={demoFactory.readinessScore}
+                  label={t("نسبة إنجاز المسار", "Track Completion")}
+                />
+              </div>
+            </CardBody>
+          </Card>
+
+          {/* Provider matching cards */}
+          <Card>
+            <CardHeader
+              title={t("مقدمو الحلول المطابقون", "Matched Solution Providers")}
+              subtitle={t(
+                "بناءً على تقييم سيري ومتطلبات مسار الرقمنة الأساسية",
+                "Based on SERI assessment and basic digitization path requirements"
+              )}
+            />
+            <CardBody className="flex flex-col gap-4">
+              {matches.slice(0, 2).map((match) => {
+                const p = serviceProviders.find((sp) => sp.id === match.providerId);
+                if (!p) return null;
+                return (
+                  <div
+                    key={p.id}
+                    className="rounded-lg border border-border p-4 transition-colors duration-200 hover:border-navy/20"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-navy">{t(p.nameAr, p.name)}</p>
+                        <p className="mt-1 text-xs text-muted">
+                          {p.solutions.join(" · ")}
                         </p>
                       </div>
-                      {i < journeyStages.length - 1 && (
-                        <div
-                          className={`mt-4 h-px w-4 shrink-0 ${done ? "bg-[var(--navy)]" : "bg-[var(--border)]"}`}
-                        />
+                      <div className="flex flex-wrap gap-2">
+                        <StatusBadge tone="success">
+                          {t("معتمد", "Approved")}
+                        </StatusBadge>
+                        <StatusBadge tone="gold">
+                          {match.score}% {t("تطابق", "match")}
+                        </StatusBadge>
+                      </div>
+                    </div>
+                    <ul className="mt-3 flex flex-col gap-1">
+                      {match.reasons.map((r, i) => (
+                        <li key={i} className="text-xs text-secondary">
+                          · {t(r.ar, r.en)}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 flex flex-wrap gap-4 text-xs tabular-nums text-muted">
+                      <span>IRR: {p.avgROI}%</span>
+                      <span>
+                        {t("الاسترداد", "Payback")}: {p.paybackMonths} {t("شهر", "mo")}
+                      </span>
+                      <span>
+                        {t("مصانع", "Factories")}: {p.factoriesServed}
+                      </span>
+                    </div>
+                    <Button variant="outline" className="mt-4">
+                      {t("طلب عرض سعر", "Request Quotation")}
+                    </Button>
+                  </div>
+                );
+              })}
+            </CardBody>
+          </Card>
+
+          {/* Quotations */}
+          <Card>
+            <CardHeader
+              title={t("عروض الأسعار المستلمة", "Received Quotations")}
+              subtitle={t("FF-2025-0847", "FF-2025-0847")}
+            />
+            <CardBody className="flex flex-col gap-4">
+              {factoryQuotations.map((qt) => {
+                const p = serviceProviders.find((sp) => sp.id === qt.providerId);
+                return (
+                  <div key={qt.id} className="flex flex-col gap-2 border-b border-border-subtle pb-4 last:border-0 last:pb-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-navy">
+                        {p ? t(p.nameAr, p.name) : qt.providerId}
+                      </p>
+                      <StatusBadge tone={qt.status === "submitted" ? "info" : "neutral"}>
+                        {t("مُقدّم", "Submitted")}
+                      </StatusBadge>
+                    </div>
+                    <p className="text-sm text-secondary">{t(qt.scope.ar, qt.scope.en)}</p>
+                    <div className="flex flex-wrap gap-4 text-sm tabular-nums">
+                      <span className="font-semibold text-navy">{formatCurrency(qt.amount)}</span>
+                      <span className="text-muted">
+                        {qt.timelineMonths} {t("شهر", "months")}
+                      </span>
+                      {qt.submittedAt && (
+                        <span className="text-muted">{qt.submittedAt}</span>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="mt-4 border-t border-[var(--border)] pt-4">
-              <ProgressLine
-                value={demoFactory.readinessScore}
-                label={t("نسبة إنجاز المسار", "Track Completion")}
-              />
-            </div>
-          </Panel>
+                  </div>
+                );
+              })}
+            </CardBody>
+          </Card>
 
-          {/* Provider matching table */}
-          <Panel
-            title={t("مقدمو الحلول المطابقون", "Matched Solution Providers")}
-            subtitle={t(
-              "بناءً على تقييم سيري ومتطلبات مسار الرقمنة الأساسية",
-              "Based on SERI assessment and basic digitization path requirements"
-            )}
-          >
-            <DataTable
-              headers={[
-                t("مقدم الخدمة", "Provider"),
-                t("الحلول", "Solutions"),
-                "IRR",
-                t("الاسترداد", "Payback"),
-                t("الحالة", "Status"),
-                "",
-              ]}
-              rows={providerRows}
-            />
-          </Panel>
+          {/* Milestones */}
+          <Card>
+            <CardHeader title={t("مراحل التنفيذ", "Implementation Milestones")} />
+            <CardBody className="flex flex-col gap-4">
+              {factoryMilestones.map((ms) => (
+                <div key={ms.id} className="rounded-lg border border-border-subtle p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-navy">
+                      {t(ms.titleAr, ms.titleEn)}
+                    </p>
+                    <StatusBadge
+                      tone={
+                        ms.status === "completed"
+                          ? "success"
+                          : ms.status === "in_progress"
+                            ? "info"
+                            : "neutral"
+                      }
+                    >
+                      {ms.status === "completed"
+                        ? t("مكتمل", "Completed")
+                        : ms.status === "in_progress"
+                          ? t("قيد التنفيذ", "In Progress")
+                          : t("قادم", "Upcoming")}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-1 text-xs tabular-nums text-muted">{ms.dueDate}</p>
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {ms.deliverables.map((d) => (
+                      <li key={d.en} className="text-xs text-secondary">
+                        · {t(d.ar, d.en)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </CardBody>
+          </Card>
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
-          <Panel title={t("بيانات الطلب", "Application Details")}>
-            <dl className="space-y-3 text-sm">
-              {[
-                [t("رقم الطلب", "Ref"), factoryDetails.applicationRef],
-                [t("البرنامج", "Program"), factoryDetails.program],
-                [t("المستشار", "Consultant"), factoryDetails.consultant],
-                [t("المرحلة الحالية", "Current Stage"), t("مطابقة مقدمي الخدمات", "Provider Matching")],
-              ].map(([label, value]) => (
-                <div key={String(label)} className="flex justify-between gap-4 border-b border-[var(--border)] pb-2">
-                  <dt className="text-[var(--muted)]">{label}</dt>
-                  <dd className="text-end font-medium text-[var(--navy)]">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </Panel>
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardHeader title={t("بيانات الطلب", "Application Details")} />
+            <CardBody>
+              <dl className="flex flex-col gap-3 text-sm">
+                {[
+                  [t("رقم الطلب", "Ref"), factoryDetails.applicationRef],
+                  [t("البرنامج", "Program"), factoryDetails.program],
+                  [t("المستشار", "Consultant"), factoryDetails.consultant],
+                  [
+                    t("المرحلة الحالية", "Current Stage"),
+                    t("مطابقة مقدمي الخدمات", "Provider Matching"),
+                  ],
+                ].map(([label, value]) => (
+                  <div
+                    key={String(label)}
+                    className="flex justify-between gap-4 border-b border-border-subtle pb-2 last:border-0"
+                  >
+                    <dt className="text-muted">{label}</dt>
+                    <dd className="text-end font-medium text-navy">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </CardBody>
+          </Card>
 
-          <Panel title={t("إنجازات مكتملة", "Completed Steps")}>
-            <ul className="space-y-2 text-sm">
-              {[
-                t("التحقق من بيانات المنشأة", "Entity data verified"),
-                t("التقييم الذاتي — مؤشر سيري", "Self-assessment — SERI"),
-                t("تعيين مستشار معتمد", "Consultant assigned"),
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2 text-[var(--foreground)]">
-                  <span className="text-[var(--navy)]">✓</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </Panel>
+          <Card>
+            <CardHeader title={t("إنجازات مكتملة", "Completed Steps")} />
+            <CardBody>
+              <ul className="flex flex-col gap-2 text-sm">
+                {[
+                  t("التحقق من بيانات المنشأة", "Entity data verified"),
+                  t("التقييم الذاتي — مؤشر سيري", "Self-assessment — SERI"),
+                  t("تعيين مستشار معتمد", "Consultant assigned"),
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-secondary">
+                    <span className="font-bold text-success">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </CardBody>
+          </Card>
 
-          <Panel title={t("دورات متاحة", "Available Training")}>
-            <div className="space-y-3">
+          <Card>
+            <CardHeader title={t("دورات متاحة", "Available Training")} />
+            <CardBody className="flex flex-col gap-3">
               {trainingPrograms.map((tp) => (
-                <div key={tp.id} className="border-b border-[var(--border)] pb-2 last:border-0">
-                  <p className="text-sm font-medium">{t(tp.titleAr, tp.titleEn)}</p>
-                  <p className="text-xs text-[var(--muted)]">{tp.duration}</p>
+                <div key={tp.id} className="border-b border-border-subtle pb-3 last:border-0">
+                  <p className="text-sm font-medium text-navy">
+                    {t(tp.titleAr, tp.titleEn)}
+                  </p>
+                  <p className="text-xs text-muted">{tp.duration}</p>
                 </div>
               ))}
-            </div>
-          </Panel>
-
-          <Link
-            href="/advisor"
-            className="block border border-[var(--border)] bg-white px-4 py-2.5 text-center text-sm text-[var(--navy)] hover:bg-[#fafbfc]"
-          >
-            {t("تحديث التقييم الأولي", "Update Initial Assessment")}
-          </Link>
+            </CardBody>
+          </Card>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }
