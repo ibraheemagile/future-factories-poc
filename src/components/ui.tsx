@@ -145,16 +145,17 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
   const styles: Record<ButtonVariant, string> = {
     primary:
-      "bg-primary text-primary-foreground hover:bg-primary-hover border border-transparent",
-    secondary: "bg-navy text-white hover:bg-navy-light border border-transparent",
+      "bg-primary text-primary-foreground hover:bg-primary-hover border border-transparent shadow-[0_1px_2px_rgba(0,108,53,0.25),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_4px_12px_rgba(0,108,53,0.3)] hover:-translate-y-px",
+    secondary:
+      "bg-navy text-white hover:bg-navy-light border border-transparent shadow-[0_1px_2px_rgba(12,35,64,0.25)] hover:-translate-y-px",
     ghost: "bg-transparent text-navy hover:bg-border-subtle border border-transparent",
-    outline: "bg-surface text-navy border border-border hover:bg-border-subtle",
+    outline: "bg-surface text-navy border border-border hover:border-navy/30 hover:bg-border-subtle",
   };
   return (
     <button
       type="button"
       className={cn(
-        "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50",
         styles[variant],
         className
       )}
